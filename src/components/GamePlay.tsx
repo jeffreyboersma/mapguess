@@ -144,13 +144,22 @@ const GamePlay: React.FC<GamePlayProps> = ({
     };
   }, [currentRound, currentLocation]);
 
+  // Get map instance for resetting zoom
+  const map = useMap(mapId);
+
   // Reset state when round changes
   useEffect(() => {
     setGuessedLocation(null);
     setHasSubmitted(false);
     setRoundResult(null);
     setMapExpanded(false);
-  }, [currentRound]);
+    
+    // Reset map zoom and center
+    if (map) {
+      map.setCenter({ lat: 20, lng: 0 });
+      map.setZoom(1);
+    }
+  }, [currentRound, map]);
 
   const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (hasSubmitted || !event.latLng) return;
