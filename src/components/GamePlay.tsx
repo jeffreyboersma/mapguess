@@ -4,6 +4,38 @@ import type { Location, RoundResult } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { calculateDistance, calculateScore, formatDistance } from '../utils/scoring';
 
+// Polyline component to draw line between guess and actual location
+const PolylineComponent: React.FC<{
+  path: google.maps.LatLngLiteral[];
+  mapId: string;
+}> = ({ path, mapId }) => {
+  const map = useMap(mapId);
+  const polylineRef = useRef<google.maps.Polyline | null>(null);
+
+  useEffect(() => {
+    if (!map || path.length < 2) return;
+
+    // Create polyline
+    polylineRef.current = new google.maps.Polyline({
+      path,
+      geodesic: true,
+      strokeColor: '#000000',
+      strokeOpacity: 0.9,
+      strokeWeight: 3,
+      map,
+    });
+
+    return () => {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+        polylineRef.current = null;
+      }
+    };
+  }, [map, path]);
+
+  return null;
+};
+
 interface GamePlayProps {
   locations: Location[];
   currentRound: number;
@@ -204,6 +236,14 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setRoundResult(result);
     setHasSubmitted(true);
     onRoundComplete(result);
+
+    // Auto-zoom to show both locations
+    if (map) {
+      const bounds = new google.maps.LatLngBounds();
+      bounds.extend(currentLocation);
+      bounds.extend(guessedLocation);
+      map.fitBounds(bounds, 80);
+    }
   };
 
   const handleNextRound = () => {
@@ -243,6 +283,15 @@ const GamePlay: React.FC<GamePlayProps> = ({
             style={{ width: '100%', height: '100%' }}
           >
             <MapClickListener />
+            
+            {/* Draw line between guess and actual location after submission */}
+            {hasSubmitted && guessedLocation && currentLocation && (
+              <PolylineComponent
+                path={[guessedLocation, currentLocation]}
+                mapId={mapId}
+              />
+            )}
+            
             {/* User's guess marker */}
             {guessedLocation && (
               <AdvancedMarker 
