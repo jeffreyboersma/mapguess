@@ -62,8 +62,15 @@ const GamePlay: React.FC<GamePlayProps> = ({
   const [showBackConfirmation, setShowBackConfirmation] = useState(false);
   const streetViewRef = useRef<HTMLDivElement>(null);
   const panoramaRef = useRef<google.maps.StreetViewPanorama | null>(null);
+  const mapCollapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentLocation = locations[currentRound - 1];
+
+  const collapseMap = useCallback(() => {
+    if (!hasSubmitted) {
+      setMapExpanded(false);
+    }
+  }, [hasSubmitted]);
 
   // Initialize Street View
   useEffect(() => {
@@ -133,6 +140,13 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   }
                 }
               });
+
+              // Add listeners for user interactions to collapse the map
+              if (panoramaRef.current) {
+                panoramaRef.current.addListener('pov_changed', collapseMap);
+                panoramaRef.current.addListener('position_changed', collapseMap);
+                panoramaRef.current.addListener('pano_changed', collapseMap);
+              }
             } else {
               // Fallback: try original position
               panoramaRef.current = new google.maps.StreetViewPanorama(streetViewRef.current, {
@@ -155,6 +169,13 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   }
                 }
               });
+
+              // Add listeners for user interactions to collapse the map
+              if (panoramaRef.current) {
+                panoramaRef.current.addListener('pov_changed', collapseMap);
+                panoramaRef.current.addListener('position_changed', collapseMap);
+                panoramaRef.current.addListener('pano_changed', collapseMap);
+              }
             }
           }
         );
@@ -177,7 +198,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
         }
       }
     };
-  }, [currentRound, currentLocation]);
+  }, [currentRound, currentLocation, collapseMap]);
 
   // Get map instance for resetting zoom
   const map = useMap(mapId);
@@ -188,6 +209,12 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setHasSubmitted(false);
     setRoundResult(null);
     setMapExpanded(false);
+    
+    // Clear any pending collapse timer
+    if (mapCollapseTimerRef.current) {
+      clearTimeout(mapCollapseTimerRef.current);
+      mapCollapseTimerRef.current = null;
+    }
     
     // Reset map zoom and center
     if (map) {
@@ -253,6 +280,23 @@ const GamePlay: React.FC<GamePlayProps> = ({
     onGameComplete();
   };
 
+  const handleMapMouseEnter = () => {
+    if (hasSubmitted) return;
+    
+    // Clear any pending collapse timer
+    if (mapCollapseTimerRef.current) {
+      clearTimeout(mapCollapseTimerRef.current);
+      mapCollapseTimerRef.current = null;
+    }
+    
+    setMapExpanded(true);
+  };
+
+  const handleMapMouseLeave = () => {
+    // Map stays expanded until user interacts with Street View
+    // No action needed on mouse leave
+  };
+
   return (
     <div className="h-screen w-screen relative overflow-hidden bg-[#0a0a0f]">
       {/* Street View Container */}
@@ -315,8 +359,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
             ? 'bottom-4 right-4 w-[600px] h-[450px]'
             : 'bottom-4 right-4 w-80 h-48'
         } ${hasSubmitted ? 'w-[600px] h-[450px]' : ''}`}
-        onMouseEnter={() => !hasSubmitted && setMapExpanded(true)}
-        onMouseLeave={() => !hasSubmitted && setMapExpanded(false)}
+        onMouseEnter={handleMapMouseEnter}
+        onMouseLeave={handleMapMouseLeave}
       >
         <div className="w-full h-full rounded-xl overflow-hidden border-2 border-gray-700/50 shadow-2xl bg-gray-900">
           <Map
