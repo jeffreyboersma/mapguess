@@ -42,6 +42,7 @@ interface GamePlayProps {
   totalRounds: number;
   onRoundComplete: (result: RoundResult) => void;
   onGameComplete: () => void;
+  onBackToMenu?: () => void;
   mapId: string;
 }
 
@@ -51,12 +52,14 @@ const GamePlay: React.FC<GamePlayProps> = ({
   totalRounds,
   onRoundComplete,
   onGameComplete,
+  onBackToMenu,
   mapId,
 }) => {
   const [guessedLocation, setGuessedLocation] = useState<Location | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [showBackConfirmation, setShowBackConfirmation] = useState(false);
   const streetViewRef = useRef<HTMLDivElement>(null);
   const panoramaRef = useRef<google.maps.StreetViewPanorama | null>(null);
 
@@ -261,6 +264,49 @@ const GamePlay: React.FC<GamePlayProps> = ({
           Round {currentRound} / {totalRounds}
         </span>
       </div>
+
+      {/* Back to Menu Button */}
+      {onBackToMenu && (
+        <button
+          onClick={() => setShowBackConfirmation(true)}
+          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-4 py-2 border border-gray-700/50 transition-all group"
+        >
+          <span className="text-white font-semibold group-hover:text-emerald-400 transition-colors">
+            ← Main Menu
+          </span>
+        </button>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showBackConfirmation && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-xl border border-gray-700/50 p-6 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-3">
+              Return to Main Menu?
+            </h3>
+            <p className="text-gray-300 mb-6">
+              Your current game progress will be lost. Are you sure you want to return to the main menu?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBackConfirmation(false)}
+                className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowBackConfirmation(false);
+                  onBackToMenu?.();
+                }}
+                className="flex-1 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-lg transition-all"
+              >
+                Leave Game
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mini Map Container */}
       <div

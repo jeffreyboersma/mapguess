@@ -153,6 +153,7 @@ function App() {
               handleRoundComplete(result);
             }}
             onGameComplete={handleNextRound}
+            onBackToMenu={handleMainMenu}
             mapId={GOOGLE_MAP_ID}
           />
         )}
