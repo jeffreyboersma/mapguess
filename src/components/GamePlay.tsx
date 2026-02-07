@@ -269,10 +269,23 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
     // Auto-zoom to show both locations
     if (map) {
-      const bounds = new google.maps.LatLngBounds();
-      bounds.extend(currentLocation);
-      bounds.extend(guessedLocation);
-      map.fitBounds(bounds, 80);
+      // Use setTimeout to ensure map is ready
+      setTimeout(() => {
+        if (!map) return;
+        
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(currentLocation);
+        bounds.extend(guessedLocation);
+        
+        // Fit to bounds with extra top padding to account for results panel overlay
+        // This ensures points are centered in the visible map area
+        map.fitBounds(bounds, {
+          top: 200,  // Extra padding for results panel
+          right: 80,
+          bottom: 80,
+          left: 80
+        });
+      }, 150);
     }
   };
 
@@ -377,7 +390,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                 west: -180,
                 east: 180,
               },
-              strictBounds: true,
+              strictBounds: false,
             }}
             style={{ width: '100%', height: '100%', cursor: hasSubmitted ? 'default' : 'pointer' }}
           >
@@ -466,7 +479,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
         {/* Results Panel */}
         {hasSubmitted && roundResult && (
-          <div className="absolute -top-32 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50">
+          <div className="absolute -top-52 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-gray-400 text-sm mb-1">Distance</p>
