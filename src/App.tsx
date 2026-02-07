@@ -6,7 +6,7 @@ import GamePlay from './components/GamePlay';
 import GameResults from './components/GameResults';
 import ApiKeyInput from './components/ApiKeyInput';
 import type { GameScreen, RoundResult, Location } from './types/game';
-import { getRandomLocations } from './data/locations';
+import { generateRandomLocations } from './utils/randomLocation';
 import './index.css';
 
 const API_KEY_STORAGE_KEY = 'mapguess_google_api_key';
@@ -19,6 +19,8 @@ function App() {
   const [currentRound, setCurrentRound] = useState(1);
   const [locations, setLocations] = useState<Location[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Load API key from localStorage on mount
   useEffect(() => {
@@ -37,12 +39,24 @@ function App() {
     setScreen('setup');
   };
 
-  const handleStartGame = (rounds: number) => {
+  const handleStartGame = async (rounds: number) => {
     setTotalRounds(rounds);
     setCurrentRound(1);
-    setLocations(getRandomLocations(rounds));
     setResults([]);
-    setScreen('game');
+    setIsLoadingLocations(true);
+    setLocationError(null);
+
+    try {
+      const generatedLocations = await generateRandomLocations(rounds);
+      setLocations(generatedLocations);
+      setScreen('game');
+    } catch (error) {
+      console.error('Failed to generate locations:', error);
+      setLocationError('Failed to generate random locations. Please try again.');
+      setScreen('setup');
+    } finally {
+      setIsLoadingLocations(false);
+    }
   };
 
   const handleRoundComplete = useCallback((result: RoundResult) => {
@@ -61,11 +75,23 @@ function App() {
     setScreen('results');
   };
 
-  const handlePlayAgain = () => {
+  const handlePlayAgain = async () => {
     setCurrentRound(1);
-    setLocations(getRandomLocations(totalRounds));
     setResults([]);
-    setScreen('game');
+    setIsLoadingLocations(true);
+    setLocationError(null);
+    setScreen('setup'); // Show setup screen while generating
+
+    try {
+      const generatedLocations = await generateRandomLocations(totalRounds);
+      setLocations(generatedLocations);
+      setScreen('game');
+    } catch (error) {
+      console.error('Failed to generate locations:', error);
+      setLocationError('Failed to generate random locations. Please try again.');
+    } finally {
+      setIsLoadingLocations(false);
+    }
   };
 
   const handleChangeRules = () => {
@@ -93,15 +119,33 @@ function App() {
         )}
         
         {screen === 'setup' && (
-          <GameSetup 
-            onStartGame={handleStartGame} 
-            onBack={handleBack}
-          />
+          <>
+            {isLoadingLocations ? (
+              <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0a0a0f] via-[#12121a] to-[#0a0a0f] px-4">
+                <div className="text-center">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Generating Random Locations
+                  </h2>
+                  <p className="text-gray-400">
+                    Finding places with Street View coverage...
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <GameSetup 
+                onStartGame={handleStartGame} 
+                onBack={handleBack}
+                error={locationError}
+              />
+            )}
+          </>
         )}
         
         {screen === 'game' && locations.length > 0 && (
           <GamePlay
-            key={currentRound}
             locations={locations}
             currentRound={currentRound}
             totalRounds={totalRounds}

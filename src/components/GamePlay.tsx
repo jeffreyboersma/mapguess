@@ -34,27 +34,115 @@ const GamePlay: React.FC<GamePlayProps> = ({
   useEffect(() => {
     if (!streetViewRef.current || !currentLocation) return;
 
+    let statusListener: google.maps.MapsEventListener | null = null;
+
     const initStreetView = () => {
       if (!window.google || !window.google.maps) {
         setTimeout(initStreetView, 100);
         return;
       }
 
-      panoramaRef.current = new google.maps.StreetViewPanorama(streetViewRef.current!, {
-        position: { lat: currentLocation.lat, lng: currentLocation.lng },
-        pov: { heading: Math.random() * 360, pitch: 0 },
-        zoom: 1,
-        addressControl: false,
-        showRoadLabels: false,
-        enableCloseButton: false,
-        fullscreenControl: false,
-        motionTracking: false,
-        motionTrackingControl: false,
-      });
+      // Destroy existing panorama completely
+      if (panoramaRef.current) {
+        try {
+          if (statusListener) {
+            google.maps.event.removeListener(statusListener);
+            statusListener = null;
+          }
+          panoramaRef.current.setVisible(false);
+          panoramaRef.current = null;
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      }
+
+      // Clear the container
+      if (streetViewRef.current) {
+        streetViewRef.current.innerHTML = '';
+      }
+
+      // Small delay to ensure DOM is cleared
+      setTimeout(() => {
+        if (!streetViewRef.current) return;
+
+        // Create Street View Service to find nearest panorama
+        const streetViewService = new google.maps.StreetViewService();
+        const position = { lat: currentLocation.lat, lng: currentLocation.lng };
+
+        streetViewService.getPanorama(
+          { location: position, radius: 100, source: google.maps.StreetViewSource.OUTDOOR },
+          (data, status) => {
+            if (!streetViewRef.current) return;
+
+            if (status === google.maps.StreetViewStatus.OK && data?.location?.latLng) {
+              // Create new panorama with verified location
+              panoramaRef.current = new google.maps.StreetViewPanorama(streetViewRef.current, {
+                position: data.location.latLng,
+                pov: { heading: Math.random() * 360, pitch: 0 },
+                zoom: 1,
+                addressControl: false,
+                showRoadLabels: false,
+                enableCloseButton: false,
+                fullscreenControl: false,
+                motionTracking: false,
+                motionTrackingControl: false,
+              });
+
+              // Listen for status changes to ensure it loads
+              statusListener = panoramaRef.current.addListener('status_changed', () => {
+                if (panoramaRef.current) {
+                  const currentStatus = panoramaRef.current.getStatus();
+                  if (currentStatus === google.maps.StreetViewStatus.OK) {
+                    // Panorama is loaded and ready
+                    panoramaRef.current.setVisible(true);
+                  }
+                }
+              });
+            } else {
+              // Fallback: try original position
+              panoramaRef.current = new google.maps.StreetViewPanorama(streetViewRef.current, {
+                position: position,
+                pov: { heading: Math.random() * 360, pitch: 0 },
+                zoom: 1,
+                addressControl: false,
+                showRoadLabels: false,
+                enableCloseButton: false,
+                fullscreenControl: false,
+                motionTracking: false,
+                motionTrackingControl: false,
+              });
+
+              statusListener = panoramaRef.current.addListener('status_changed', () => {
+                if (panoramaRef.current) {
+                  const currentStatus = panoramaRef.current.getStatus();
+                  if (currentStatus === google.maps.StreetViewStatus.OK) {
+                    panoramaRef.current.setVisible(true);
+                  }
+                }
+              });
+            }
+          }
+        );
+      }, 50);
     };
 
     initStreetView();
-  }, [currentLocation]);
+
+    // Cleanup
+    return () => {
+      if (statusListener) {
+        google.maps.event.removeListener(statusListener);
+      }
+      if (panoramaRef.current) {
+        try {
+          panoramaRef.current.setVisible(false);
+          panoramaRef.current = null;
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
+  }, [currentRound, currentLocation]);
 
   // Reset state when round changes
   useEffect(() => {
