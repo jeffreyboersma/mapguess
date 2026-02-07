@@ -259,7 +259,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       <div ref={streetViewRef} className="absolute inset-0 w-full h-full z-0" />
 
       {/* Round Indicator */}
-      <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
+      <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-5 py-3 border border-gray-700/50">
         <span className="text-white font-semibold">
           Round {currentRound} / {totalRounds}
         </span>
@@ -269,7 +269,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       {onBackToMenu && (
         <button
           onClick={() => setShowBackConfirmation(true)}
-          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-4 py-2 border border-gray-700/50 transition-all group"
+          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-5 py-3 border border-gray-700/50 transition-all group"
         >
           <span className="text-white font-semibold group-hover:text-emerald-400 transition-colors">
             ← Main Menu
@@ -280,17 +280,17 @@ const GamePlay: React.FC<GamePlayProps> = ({
       {/* Confirmation Dialog */}
       {showBackConfirmation && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-gray-900 rounded-xl border border-gray-700/50 p-6 max-w-md mx-4 shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-3">
+          <div className="bg-gray-900 rounded-xl border border-gray-700/50 p-8 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-4">
               Return to Main Menu?
             </h3>
-            <p className="text-gray-300 mb-6">
+            <p className="text-gray-300 mb-8 leading-relaxed">
               Your current game progress will be lost. Are you sure you want to return to the main menu?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBackConfirmation(false)}
-                className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
+                className="flex-1 py-3 px-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
               >
                 Cancel
               </button>
@@ -299,7 +299,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   setShowBackConfirmation(false);
                   onBackToMenu?.();
                 }}
-                className="flex-1 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-lg transition-all"
+                className="flex-1 py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-lg transition-all"
               >
                 Leave Game
               </button>
@@ -395,11 +395,11 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
           {/* Submit Button Overlay */}
           {!hasSubmitted && (
-            <div className="absolute bottom-3 left-3 right-3">
+            <div className="absolute bottom-4 left-4 right-4">
               <button
                 onClick={handleSubmitGuess}
                 disabled={!guessedLocation}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${
                   guessedLocation
                     ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg'
                     : 'bg-gray-700/80 text-gray-400 cursor-not-allowed'
@@ -413,14 +413,14 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
         {/* Results Panel */}
         {hasSubmitted && roundResult && (
-          <div className="absolute -top-32 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
-            <div className="flex items-center justify-between mb-3">
+          <div className="absolute -top-32 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-gray-400 text-sm">Distance</p>
+                <p className="text-gray-400 text-sm mb-1">Distance</p>
                 <p className="text-white text-xl font-bold">{formatDistance(roundResult.distance)}</p>
               </div>
               <div className="text-right">
-                <p className="text-gray-400 text-sm">Score</p>
+                <p className="text-gray-400 text-sm mb-1">Score</p>
                 <p className="text-emerald-400 text-xl font-bold">
                   +{roundResult.score.toLocaleString()} / {MAX_SCORE_PER_ROUND.toLocaleString()}
                 </p>
@@ -428,14 +428,14 @@ const GamePlay: React.FC<GamePlayProps> = ({
             </div>
             
             {currentLocation.name && (
-              <p className="text-gray-300 text-sm mb-3">
+              <p className="text-gray-300 text-sm mb-4">
                 📍 {currentLocation.name}
               </p>
             )}
 
             <button
               onClick={handleNextRound}
-              className="w-full py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold rounded-lg transition-all"
+              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold rounded-lg transition-all"
             >
               {currentRound >= totalRounds ? 'See Results' : 'Next Round →'}
             </button>
@@ -445,7 +445,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
       {/* Hint text */}
       {!hasSubmitted && !mapExpanded && (
-        <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
+        <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-5 py-3 border border-gray-700/50">
           <span className="text-gray-300 text-sm">
             Hover over the map to expand • Click to place your guess
           </span>

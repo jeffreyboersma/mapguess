@@ -57,17 +57,17 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
         </form>
 
         {/* Help Text */}
-        <div className="mt-8 bg-gray-800/40 rounded-xl p-5 border border-gray-700/50">
-          <h3 className="text-white font-semibold mb-3">How to get an API key:</h3>
-          <ol className="text-gray-400 text-sm space-y-2 list-decimal list-inside">
-            <li>Go to the <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Google Cloud Console</a></li>
-            <li>Create a new project or select an existing one</li>
-            <li><strong className="text-gray-300">Enable billing</strong> on your project (required for Maps API)</li>
-            <li>Enable the <span className="text-gray-300">Maps JavaScript API</span> and <span className="text-gray-300">Street View API</span></li>
-            <li>Create a <span className="text-gray-300">Map ID</span> (in the Map Management section)</li>
-            <li>Create credentials (API key)</li>
-            <li>Copy the API key and paste it above</li>
-            <li>Copy your Map ID and add it to <span className="text-gray-300">App.tsx</span> (GOOGLE_MAP_ID constant)</li>
+        <div className="mt-8 bg-gray-800/40 rounded-xl p-6 border border-gray-700/50">
+          <h3 className="text-white font-semibold mb-4">How to get an API key:</h3>
+          <ol className="text-gray-400 text-sm space-y-2.5 list-decimal list-inside">
+            <li className="pl-2">Go to the <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Google Cloud Console</a></li>
+            <li className="pl-2">Create a new project or select an existing one</li>
+            <li className="pl-2"><strong className="text-gray-300">Enable billing</strong> on your project (required for Maps API)</li>
+            <li className="pl-2">Enable the <span className="text-gray-300">Maps JavaScript API</span> and <span className="text-gray-300">Street View API</span></li>
+            <li className="pl-2">Create a <span className="text-gray-300">Map ID</span> (in the Map Management section)</li>
+            <li className="pl-2">Create credentials (API key)</li>
+            <li className="pl-2">Copy the API key and paste it above</li>
+            <li className="pl-2">Copy your Map ID and add it to <span className="text-gray-300">App.tsx</span> (GOOGLE_MAP_ID constant)</li>
           </ol>
         </div>
 

@@ -25,7 +25,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
       <button
         onClick={onBack}
         disabled={isGenerating}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="absolute top-6 left-6 text-gray-400 hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -68,28 +68,28 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
         </div>
 
         {/* Game Info */}
-        <div className="bg-gray-800/40 rounded-xl p-5 mb-10 border border-gray-700/50">
-          <h3 className="text-white font-semibold mb-3">How to Play</h3>
-          <ul className="text-gray-400 text-sm space-y-2">
-            <li className="flex items-start gap-2">
+        <div className="bg-gray-800/40 rounded-xl p-6 mb-10 border border-gray-700/50">
+          <h3 className="text-white font-semibold mb-4">How to Play</h3>
+          <ul className="text-gray-400 text-sm space-y-2.5">
+            <li className="flex items-start gap-3">
               <span className="text-emerald-400 mt-0.5">•</span>
-              You'll be dropped at a random location anywhere in the world
+              <span>You'll be dropped at a random location anywhere in the world</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-emerald-400 mt-0.5">•</span>
-              All locations have official Google Street View coverage
+              <span>All locations have official Google Street View coverage</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-emerald-400 mt-0.5">•</span>
-              Explore and find clues to determine your location
+              <span>Explore and find clues to determine your location</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-emerald-400 mt-0.5">•</span>
-              Click on the map to place your guess
+              <span>Click on the map to place your guess</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start gap-3">
               <span className="text-emerald-400 mt-0.5">•</span>
-              Score up to 5,000 points per round based on accuracy
+              <span>Score up to 5,000 points per round based on accuracy</span>
             </li>
           </ul>
         </div>
