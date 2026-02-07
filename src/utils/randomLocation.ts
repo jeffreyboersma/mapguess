@@ -12,6 +12,77 @@ function generateRandomCoordinates(): { lat: number; lng: number } {
 }
 
 /**
+ * Gets the location name with country using reverse geocoding
+ */
+async function getLocationNameWithCountry(
+  lat: number,
+  lng: number,
+  streetViewDescription?: string
+): Promise<string> {
+  const geocoder = new google.maps.Geocoder();
+  
+  try {
+    const result = await new Promise<google.maps.GeocoderResult[]>(
+      (resolve, reject) => {
+        geocoder.geocode(
+          { location: { lat, lng } },
+          (results, status) => {
+            if (status === google.maps.GeocoderStatus.OK && results) {
+              resolve(results);
+            } else {
+              reject(new Error(`Geocoding failed: ${status}`));
+            }
+          }
+        );
+      }
+    );
+
+    if (result && result.length > 0) {
+      // Find the country from address components
+      let country = '';
+      let locality = '';
+      let adminArea = '';
+      
+      for (const component of result[0].address_components) {
+        if (component.types.includes('country')) {
+          country = component.long_name;
+        }
+        if (component.types.includes('locality')) {
+          locality = component.long_name;
+        }
+        if (component.types.includes('administrative_area_level_1')) {
+          adminArea = component.long_name;
+        }
+      }
+
+      // Build the location name
+      if (streetViewDescription && country) {
+        // If we have a Street View description, use it and append the country
+        // Check if the description already contains the country
+        if (!streetViewDescription.includes(country)) {
+          return `${streetViewDescription}, ${country}`;
+        }
+        return streetViewDescription;
+      } else if (locality && country) {
+        // Use locality and country
+        return `${locality}, ${country}`;
+      } else if (adminArea && country) {
+        // Use admin area and country
+        return `${adminArea}, ${country}`;
+      } else if (country) {
+        // Just the country
+        return country;
+      }
+    }
+  } catch (error) {
+    console.warn('Geocoding failed:', error);
+  }
+
+  // Fallback to Street View description or "Unknown Location"
+  return streetViewDescription || 'Unknown Location';
+}
+
+/**
  * Attempts to find a random location with Street View coverage
  * Returns null if no location found after max attempts
  */
@@ -45,10 +116,21 @@ async function findRandomStreetViewLocation(
       );
 
       if (result?.location?.latLng) {
+        const lat = result.location.latLng.lat();
+        const lng = result.location.latLng.lng();
+        const streetViewDescription = result.location.description || result.location.shortDescription;
+        
+        // Get location name with country
+        const name = await getLocationNameWithCountry(
+          lat,
+          lng,
+          streetViewDescription ?? undefined
+        );
+        
         return {
-          lat: result.location.latLng.lat(),
-          lng: result.location.latLng.lng(),
-          name: result.location.description || result.location.shortDescription || undefined,
+          lat,
+          lng,
+          name,
         };
       }
     } catch (error) {
