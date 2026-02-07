@@ -110,14 +110,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   };
 
   const handleNextRound = () => {
-    if (currentRound >= totalRounds) {
-      onGameComplete();
-    } else {
-      setGuessedLocation(null);
-      setHasSubmitted(false);
-      setRoundResult(null);
-      setMapExpanded(false);
-    }
+    onGameComplete();
   };
 
   return (
