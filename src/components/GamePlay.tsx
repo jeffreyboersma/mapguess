@@ -319,7 +319,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       <div ref={streetViewRef} className="absolute inset-0 w-full h-full z-0" />
 
       {/* Round Indicator */}
-      <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-5 py-3 border border-gray-700/50">
+      <div className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-5 py-3 border border-gray-700/50">
         <span className="text-white font-semibold">
           Round {currentRound} / {totalRounds}
         </span>
@@ -329,7 +329,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       {onBackToMenu && (
         <button
           onClick={() => setShowBackConfirmation(true)}
-          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-5 py-3 border border-gray-700/50 transition-all group cursor-pointer"
+          className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-5 py-3 border border-gray-700/50 transition-all group cursor-pointer"
         >
           <span className="text-white font-semibold group-hover:text-emerald-400 transition-colors">
             ← Main Menu
