@@ -10,6 +10,7 @@ import { getRandomLocations } from './data/locations';
 import './index.css';
 
 const API_KEY_STORAGE_KEY = 'mapguess_google_api_key';
+const GOOGLE_MAP_ID = '8ca3f3544775b7836936abfc'; // Replace with your Google Cloud Map ID
 
 function App() {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -85,7 +86,7 @@ function App() {
   }
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <APIProvider apiKey={apiKey} libraries={['places', 'marker']}>
       <div className="min-h-screen bg-[#0a0a0f]">
         {screen === 'menu' && (
           <MainMenu onSelectSinglePlayer={handleSelectSinglePlayer} />
@@ -108,7 +109,7 @@ function App() {
               handleRoundComplete(result);
             }}
             onGameComplete={handleNextRound}
-            apiKey={apiKey}
+            mapId={GOOGLE_MAP_ID}
           />
         )}
         

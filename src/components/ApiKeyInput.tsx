@@ -62,9 +62,12 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
           <ol className="text-gray-400 text-sm space-y-2 list-decimal list-inside">
             <li>Go to the <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Google Cloud Console</a></li>
             <li>Create a new project or select an existing one</li>
+            <li><strong className="text-gray-300">Enable billing</strong> on your project (required for Maps API)</li>
             <li>Enable the <span className="text-gray-300">Maps JavaScript API</span> and <span className="text-gray-300">Street View API</span></li>
+            <li>Create a <span className="text-gray-300">Map ID</span> (in the Map Management section)</li>
             <li>Create credentials (API key)</li>
-            <li>Copy and paste the API key above</li>
+            <li>Copy the API key and paste it above</li>
+            <li>Copy your Map ID and add it to <span className="text-gray-300">App.tsx</span> (GOOGLE_MAP_ID constant)</li>
           </ol>
         </div>
 

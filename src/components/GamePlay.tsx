@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import type { Location, RoundResult } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { calculateDistance, calculateScore, formatDistance } from '../utils/scoring';
@@ -10,7 +10,7 @@ interface GamePlayProps {
   totalRounds: number;
   onRoundComplete: (result: RoundResult) => void;
   onGameComplete: () => void;
-  apiKey: string;
+  mapId: string;
 }
 
 const GamePlay: React.FC<GamePlayProps> = ({
@@ -19,7 +19,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   totalRounds,
   onRoundComplete,
   onGameComplete,
-  apiKey,
+  mapId,
 }) => {
   const [guessedLocation, setGuessedLocation] = useState<Location | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -64,14 +64,31 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setMapExpanded(false);
   }, [currentRound]);
 
-  const handleMapClick = useCallback((event: { detail: { latLng: { lat: number; lng: number } | null } }) => {
-    if (hasSubmitted || !event.detail.latLng) return;
+  const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
+    if (hasSubmitted || !event.latLng) return;
     
     setGuessedLocation({
-      lat: event.detail.latLng.lat,
-      lng: event.detail.latLng.lng,
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng(),
     });
   }, [hasSubmitted]);
+
+  // Map click listener component
+  const MapClickListener: React.FC = () => {
+    const map = useMap(mapId);
+
+    useEffect(() => {
+      if (!map) return;
+
+      const listener = map.addListener('click', handleMapClick);
+
+      return () => {
+        google.maps.event.removeListener(listener);
+      };
+    }, [map]);
+
+    return null;
+  };
 
   const handleSubmitGuess = () => {
     if (!guessedLocation || !currentLocation) return;
@@ -106,10 +123,10 @@ const GamePlay: React.FC<GamePlayProps> = ({
   return (
     <div className="h-screen w-screen relative overflow-hidden bg-[#0a0a0f]">
       {/* Street View Container */}
-      <div ref={streetViewRef} className="absolute inset-0 w-full h-full" />
+      <div ref={streetViewRef} className="absolute inset-0 w-full h-full z-0" />
 
       {/* Round Indicator */}
-      <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
+      <div className="absolute top-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
         <span className="text-white font-semibold">
           Round {currentRound} / {totalRounds}
         </span>
@@ -117,7 +134,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
       {/* Mini Map Container */}
       <div
-        className={`absolute transition-all duration-300 ease-in-out ${
+        className={`absolute z-10 transition-all duration-300 ease-in-out ${
           mapExpanded
             ? 'bottom-4 right-4 w-[600px] h-[450px]'
             : 'bottom-4 right-4 w-80 h-48'
@@ -125,36 +142,71 @@ const GamePlay: React.FC<GamePlayProps> = ({
         onMouseEnter={() => !hasSubmitted && setMapExpanded(true)}
         onMouseLeave={() => !hasSubmitted && setMapExpanded(false)}
       >
-        <div className="w-full h-full rounded-xl overflow-hidden border-2 border-gray-700/50 shadow-2xl">
-          <APIProvider apiKey={apiKey}>
-            <Map
-              defaultCenter={{ lat: 20, lng: 0 }}
-              defaultZoom={1}
-              mapId="guess-map"
-              gestureHandling="greedy"
-              disableDefaultUI={true}
-              onClick={handleMapClick}
-              className="w-full h-full"
-            >
-              {/* User's guess marker */}
-              {guessedLocation && (
-                <AdvancedMarker position={guessedLocation}>
-                  <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full" />
-                  </div>
-                </AdvancedMarker>
-              )}
+        <div className="w-full h-full rounded-xl overflow-hidden border-2 border-gray-700/50 shadow-2xl bg-gray-900">
+          <Map
+            id={mapId}
+            mapId={mapId}
+            defaultCenter={{ lat: 20, lng: 0 }}
+            defaultZoom={1}
+            gestureHandling="greedy"
+            disableDefaultUI={true}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <MapClickListener />
+            {/* User's guess marker */}
+            {guessedLocation && (
+              <AdvancedMarker 
+                position={guessedLocation}
+                title="Your Guess"
+              >
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: '#ef4444',
+                  borderRadius: '50%',
+                  border: '2px solid white',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'white',
+                    borderRadius: '50%'
+                  }} />
+                </div>
+              </AdvancedMarker>
+            )}
 
-              {/* Actual location marker (shown after submit) */}
-              {hasSubmitted && currentLocation && (
-                <AdvancedMarker position={currentLocation}>
-                  <div className="w-6 h-6 bg-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full" />
-                  </div>
-                </AdvancedMarker>
-              )}
-            </Map>
-          </APIProvider>
+            {/* Actual location marker (shown after submit) */}
+            {hasSubmitted && currentLocation && (
+              <AdvancedMarker 
+                position={currentLocation}
+                title="Actual Location"
+              >
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
+                  border: '2px solid white',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'white',
+                    borderRadius: '50%'
+                  }} />
+                </div>
+              </AdvancedMarker>
+            )}
+          </Map>
 
           {/* Submit Button Overlay */}
           {!hasSubmitted && (
@@ -208,7 +260,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
       {/* Hint text */}
       {!hasSubmitted && !mapExpanded && (
-        <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
+        <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-700/50">
           <span className="text-gray-300 text-sm">
             Hover over the map to expand • Click to place your guess
           </span>
