@@ -273,18 +273,21 @@ const GamePlay: React.FC<GamePlayProps> = ({
       setTimeout(() => {
         if (!map) return;
         
+        // Calculate the exact midpoint between the two locations
+        const midpoint = {
+          lat: (currentLocation.lat + guessedLocation.lat) / 2,
+          lng: (currentLocation.lng + guessedLocation.lng) / 2
+        };
+        
+        // Set the center to the midpoint first
+        map.setCenter(midpoint);
+        
+        // Then fit bounds to show both points with uniform padding
         const bounds = new google.maps.LatLngBounds();
         bounds.extend(currentLocation);
         bounds.extend(guessedLocation);
         
-        // Fit to bounds with extra top padding to account for results panel overlay
-        // This ensures points are centered in the visible map area
-        map.fitBounds(bounds, {
-          top: 200,  // Extra padding for results panel
-          right: 80,
-          bottom: 80,
-          left: 80
-        });
+        map.fitBounds(bounds);
       }, 150);
     }
   };
