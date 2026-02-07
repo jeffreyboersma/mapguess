@@ -117,7 +117,7 @@ const GameResults: React.FC<GameResultsProps> = ({
         <div className="space-y-3">
           <button
             onClick={onPlayAgain}
-            className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+            className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] cursor-pointer"
           >
             Play Again
           </button>
@@ -125,13 +125,13 @@ const GameResults: React.FC<GameResultsProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={onChangeRules}
-              className="py-3 px-6 bg-gray-800/60 hover:bg-gray-700/60 text-white font-semibold rounded-xl transition-all border border-gray-700/50"
+              className="py-3 px-6 bg-gray-800/60 hover:bg-gray-700/60 text-white font-semibold rounded-xl transition-all border border-gray-700/50 cursor-pointer"
             >
               Change Rules
             </button>
             <button
               onClick={onMainMenu}
-              className="py-3 px-6 bg-gray-800/60 hover:bg-gray-700/60 text-white font-semibold rounded-xl transition-all border border-gray-700/50"
+              className="py-3 px-6 bg-gray-800/60 hover:bg-gray-700/60 text-white font-semibold rounded-xl transition-all border border-gray-700/50 cursor-pointer"
             >
               Main Menu
             </button>

@@ -29,7 +29,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelectSinglePlayer }) => {
       <div className="w-full max-w-sm space-y-4">
         <button
           onClick={onSelectSinglePlayer}
-          className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+          className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] cursor-pointer"
         >
           <div className="flex items-center justify-center gap-3">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

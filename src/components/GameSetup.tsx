@@ -25,7 +25,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
       <button
         onClick={onBack}
         disabled={isGenerating}
-        className="absolute top-6 left-6 text-gray-400 hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="absolute top-6 left-6 text-gray-400 hover:text-white flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -55,7 +55,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
                 key={option}
                 onClick={() => setRounds(option)}
                 disabled={isGenerating}
-                className={`py-3 px-4 rounded-lg font-semibold text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`py-3 px-4 rounded-lg font-semibold text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                   rounds === option
                     ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25'
                     : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/60 border border-gray-700/50'
@@ -105,7 +105,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
         <button
           onClick={handleStartGame}
           disabled={isGenerating}
-          className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
         >
           {isGenerating ? 'Generating Locations...' : 'Start Game'}
         </button>

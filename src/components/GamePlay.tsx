@@ -269,7 +269,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       {onBackToMenu && (
         <button
           onClick={() => setShowBackConfirmation(true)}
-          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-5 py-3 border border-gray-700/50 transition-all group"
+          className="absolute top-4 right-4 z-10 bg-black/70 backdrop-blur-sm hover:bg-black/90 rounded-lg px-5 py-3 border border-gray-700/50 transition-all group cursor-pointer"
         >
           <span className="text-white font-semibold group-hover:text-emerald-400 transition-colors">
             ← Main Menu
@@ -290,7 +290,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBackConfirmation(false)}
-                className="flex-1 py-3 px-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all"
+                className="flex-1 py-3 px-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -299,7 +299,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   setShowBackConfirmation(false);
                   onBackToMenu?.();
                 }}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-lg transition-all"
+                className="flex-1 py-3 px-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-lg transition-all cursor-pointer"
               >
                 Leave Game
               </button>
@@ -326,7 +326,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             defaultZoom={1}
             gestureHandling="greedy"
             disableDefaultUI={true}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%', cursor: hasSubmitted ? 'default' : 'pointer' }}
           >
             <MapClickListener />
             
@@ -401,7 +401,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                 disabled={!guessedLocation}
                 className={`w-full py-3 px-4 rounded-lg font-semibold transition-all ${
                   guessedLocation
-                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg'
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg cursor-pointer'
                     : 'bg-gray-700/80 text-gray-400 cursor-not-allowed'
                 }`}
               >
@@ -435,7 +435,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
             <button
               onClick={handleNextRound}
-              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold rounded-lg transition-all"
+              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold rounded-lg transition-all cursor-pointer"
             >
               {currentRound >= totalRounds ? 'See Results' : 'Next Round →'}
             </button>

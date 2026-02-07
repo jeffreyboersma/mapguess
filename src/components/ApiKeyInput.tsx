@@ -50,7 +50,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
 
           <button
             type="submit"
-            className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]"
+            className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] cursor-pointer"
           >
             Continue
           </button>
@@ -60,7 +60,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeySubmit }) => {
         <div className="mt-8 bg-gray-800/40 rounded-xl p-6 border border-gray-700/50">
           <h3 className="text-white font-semibold mb-4">How to get an API key:</h3>
           <ol className="text-gray-400 text-sm space-y-2.5 list-decimal list-inside">
-            <li className="pl-2">Go to the <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Google Cloud Console</a></li>
+            <li className="pl-2">Go to the <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline cursor-pointer">Google Cloud Console</a></li>
             <li className="pl-2">Create a new project or select an existing one</li>
             <li className="pl-2"><strong className="text-gray-300">Enable billing</strong> on your project (required for Maps API)</li>
             <li className="pl-2">Enable the <span className="text-gray-300">Maps JavaScript API</span> and <span className="text-gray-300">Street View API</span></li>
