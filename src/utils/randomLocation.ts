@@ -43,16 +43,21 @@ async function getLocationNameWithCountry(
       let locality = '';
       let adminArea = '';
       
-      for (const component of result[0].address_components) {
-        if (component.types.includes('country')) {
-          country = component.long_name;
+      // Try to find country from the first result, but check all results if needed
+      for (const geocodeResult of result) {
+        for (const component of geocodeResult.address_components) {
+          if (component.types.includes('country') && !country) {
+            country = component.long_name;
+          }
+          if (component.types.includes('locality') && !locality) {
+            locality = component.long_name;
+          }
+          if (component.types.includes('administrative_area_level_1') && !adminArea) {
+            adminArea = component.long_name;
+          }
         }
-        if (component.types.includes('locality')) {
-          locality = component.long_name;
-        }
-        if (component.types.includes('administrative_area_level_1')) {
-          adminArea = component.long_name;
-        }
+        // If we found a country, we can stop looking
+        if (country) break;
       }
 
       // Build the location name
@@ -72,14 +77,17 @@ async function getLocationNameWithCountry(
       } else if (country) {
         // Just the country
         return country;
+      } else if (streetViewDescription) {
+        // If we have Street View description but no country, still use it
+        return streetViewDescription;
       }
     }
   } catch (error) {
     console.warn('Geocoding failed:', error);
   }
 
-  // Fallback to Street View description or "Unknown Location"
-  return streetViewDescription || 'Unknown Location';
+  // Last resort fallback
+  return 'Unknown Location';
 }
 
 /**
