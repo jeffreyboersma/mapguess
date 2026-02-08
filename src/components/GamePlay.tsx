@@ -5,6 +5,53 @@ import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { calculateDistance, calculateScore, formatDistance } from '../utils/scoring';
 import { getRegionMapView, getRegionBounds } from '../utils/randomLocation';
 
+// RegionMask component to grey out areas outside selected region
+const RegionMask: React.FC<{
+  regionType?: RegionType;
+  regionName?: string;
+  mapId: string;
+}> = ({ regionType, regionName, mapId }) => {
+  const map = useMap(mapId);
+  const polygonRef = useRef<google.maps.Polygon | null>(null);
+
+  useEffect(() => {
+    if (!map || !regionType || regionType === 'world' || !regionName) return;
+
+    const bounds = getRegionBounds(regionType, regionName);
+    if (!bounds) return;
+
+    // Create a rectangle outlining the selected region
+    const regionBorder = [
+      { lat: bounds.latMax, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMin },
+    ];
+
+    // Create polygon with just the border (no fill)
+    polygonRef.current = new google.maps.Polygon({
+      paths: [regionBorder],
+      strokeColor: '#10b981',
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: 'transparent',
+      fillOpacity: 0,
+      map,
+      clickable: false,
+    });
+
+    return () => {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+    };
+  }, [map, regionType, regionName]);
+
+  return null;
+};
+
 // Polyline component to draw line between guess and actual location
 const PolylineComponent: React.FC<{
   path: google.maps.LatLngLiteral[];
@@ -522,6 +569,9 @@ const GamePlay: React.FC<GamePlayProps> = ({
             style={{ width: '100%', height: '100%', cursor: hasSubmitted ? 'default' : 'pointer' }}
           >
             <MapClickListener />
+            
+            {/* Grey out areas outside selected region */}
+            <RegionMask regionType={regionType} regionName={regionName} mapId={mapId} />
             
             {/* Draw line between guess and actual location after submission */}
             {hasSubmitted && guessedLocation && currentLocation && (
