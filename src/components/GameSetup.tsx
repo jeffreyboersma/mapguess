@@ -41,7 +41,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
 
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 mt-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             Game Setup
           </h2>
@@ -140,7 +140,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
         </button>
 
         {/* Points Info */}
-        <p className="text-center text-gray-500 text-sm mt-4">
+        <p className="text-center text-gray-500 text-sm mt-4 mb-4">
           Maximum possible score: {(rounds * 5000).toLocaleString()} points
         </p>
       </div>
