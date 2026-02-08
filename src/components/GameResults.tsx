@@ -1,8 +1,56 @@
 import React, { useEffect, useRef } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import type { RoundResult } from '../types/game';
+import type { RoundResult, RegionType } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { formatDistance } from '../utils/scoring';
+import { getRegionBounds } from '../utils/randomLocation';
+
+// RegionMask component to draw outline of selected region
+const RegionMask: React.FC<{
+  regionType?: RegionType;
+  regionName?: string;
+  mapId: string;
+}> = ({ regionType, regionName, mapId }) => {
+  const map = useMap(mapId);
+  const polygonRef = useRef<google.maps.Polygon | null>(null);
+
+  useEffect(() => {
+    if (!map || !regionType || regionType === 'world' || !regionName) return;
+
+    const bounds = getRegionBounds(regionType, regionName);
+    if (!bounds) return;
+
+    // Create a rectangle outlining the selected region
+    const regionBorder = [
+      { lat: bounds.latMax, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMin },
+    ];
+
+    // Create polygon with just the border (no fill)
+    polygonRef.current = new google.maps.Polygon({
+      paths: [regionBorder],
+      strokeColor: '#10b981',
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: 'transparent',
+      fillOpacity: 0,
+      map,
+      clickable: false,
+    });
+
+    return () => {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+    };
+  }, [map, regionType, regionName]);
+
+  return null;
+};
 
 // Component to auto-fit map bounds to show all markers
 const MapBoundsFitter: React.FC<{
@@ -99,6 +147,7 @@ interface GameResultsProps {
   onChangeRules: () => void;
   onMainMenu: () => void;
   regionName?: string;
+  regionType?: RegionType;
   mapId: string;
 }
 
@@ -109,6 +158,7 @@ const GameResults: React.FC<GameResultsProps> = ({
   onChangeRules,
   onMainMenu,
   regionName,
+  regionType,
   mapId,
 }) => {
   const totalScore = results.reduce((sum, r) => sum + r.score, 0);
@@ -181,6 +231,7 @@ const GameResults: React.FC<GameResultsProps> = ({
           <h2 className="text-xl font-semibold text-white mb-5">Game Summary</h2>
           <div className="relative w-full h-[400px] rounded-lg overflow-hidden">
             <Map
+              id={mapId}
               mapId={mapId}
               defaultCenter={{ lat: 0, lng: 0 }}
               defaultZoom={1.5}
@@ -188,6 +239,9 @@ const GameResults: React.FC<GameResultsProps> = ({
               gestureHandling="greedy"
               style={{ width: '100%', height: '100%' }}
             >
+              {/* Draw region outline */}
+              <RegionMask regionType={regionType} regionName={regionName} mapId={mapId} />
+              
               {/* Auto-fit bounds to show all markers */}
               <MapBoundsFitter results={results} />
               
