@@ -14,6 +14,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
   const [regionType, setRegionType] = useState<RegionType>('world');
   const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const roundOptions = [3, 5, 10, 15, 20];
   const timeLimitOptions = [
@@ -27,6 +28,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
   const handleRegionTypeChange = (type: RegionType) => {
     setRegionType(type);
     setSelectedRegion('');
+    setIsDropdownOpen(false);
   };
 
   const handleStartGame = () => {
@@ -148,36 +150,102 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
 
           {/* Continent Selector */}
           {regionType === 'continent' && (
-            <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              disabled={isGenerating}
-              className="w-full py-3 px-4 rounded-lg bg-gray-800/60 text-gray-300 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <option value="">Select a Continent</option>
-              {CONTINENTS.map((continent) => (
-                <option key={continent} value={continent}>
-                  {continent}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                disabled={isGenerating}
+                className={`w-full py-3 px-4 rounded-xl bg-gray-800/60 text-white border border-gray-700/50 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-700/60 flex items-center justify-between relative ${isDropdownOpen ? 'z-20' : ''}`}
+              >
+                <span className={selectedRegion ? 'text-white' : 'text-gray-400'}>
+                  {selectedRegion || 'Select a Continent'}
+                </span>
+                <svg 
+                  className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute z-20 w-full mt-2 bg-gray-800 border border-gray-700/50 rounded-xl shadow-xl max-h-60 overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:my-1 [&::-webkit-scrollbar-thumb:hover]:bg-gray-500">
+                    {CONTINENTS.map((continent) => (
+                      <button
+                        key={continent}
+                        onClick={() => {
+                          setSelectedRegion(continent);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left transition-colors cursor-pointer ${
+                          selectedRegion === continent
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-white font-medium'
+                            : 'text-gray-300 hover:bg-gray-700/60'
+                        }`}
+                      >
+                        {continent}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
 
           {/* Country Selector */}
           {regionType === 'country' && (
-            <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              disabled={isGenerating}
-              className="w-full py-3 px-4 rounded-lg bg-gray-800/60 text-gray-300 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <option value="">Select a Country</option>
-              {COUNTRIES.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                disabled={isGenerating}
+                className={`w-full py-3 px-4 rounded-xl bg-gray-800/60 text-white border border-gray-700/50 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-700/60 flex items-center justify-between relative ${isDropdownOpen ? 'z-20' : ''}`}
+              >
+                <span className={selectedRegion ? 'text-white' : 'text-gray-400'}>
+                  {selectedRegion || 'Select a Country'}
+                </span>
+                <svg 
+                  className={`w-5 h-5 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute z-20 w-full mt-2 bg-gray-800 border border-gray-700/50 rounded-xl shadow-xl max-h-60 overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:my-1 [&::-webkit-scrollbar-thumb:hover]:bg-gray-500">
+                    {COUNTRIES.map((country) => (
+                      <button
+                        key={country}
+                        onClick={() => {
+                          setSelectedRegion(country);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left transition-colors cursor-pointer ${
+                          selectedRegion === country
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-white font-medium'
+                            : 'text-gray-300 hover:bg-gray-700/60'
+                        }`}
+                      >
+                        {country}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           )}
         </div>
 
