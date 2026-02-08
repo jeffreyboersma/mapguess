@@ -111,6 +111,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
   const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
 
   const roundOptions = [3, 5, 10, 15, 20];
   const timeLimitOptions = [
@@ -130,6 +131,10 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
   const handleStartGame = () => {
     setIsGenerating(true);
     onStartGame(rounds, timeLimit, regionType, selectedRegion || undefined);
+  };
+
+  const handleRefreshMap = () => {
+    setMapKey(prev => prev + 1);
   };
 
   return (
@@ -347,21 +352,34 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
 
         {/* Region Map Preview */}
         <div className="mb-10">
-          <label className="block text-gray-300 text-sm font-medium mb-4">
-            Region Preview
-          </label>
+          <div className="flex items-center justify-between mb-4">
+            <label className="text-gray-300 text-sm font-medium">
+              Region Preview
+            </label>
+            <button
+              onClick={handleRefreshMap}
+              disabled={isGenerating}
+              className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-gray-800/60 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Refresh map view"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+          </div>
           <div className="w-full h-64 rounded-xl overflow-hidden border border-gray-700/50 shadow-lg">
             <Map
-              key={regionType === 'world' || selectedRegion ? `${regionType}-${selectedRegion || 'world'}` : 'unselected'}
+              key={`${regionType}-${selectedRegion || 'world'}-${mapKey}`}
               defaultCenter={{ lat: 20, lng: 0 }}
               defaultZoom={1}
               disableDefaultUI={true}
-              gestureHandling="none"
-              keyboardShortcuts={false}
-              disableDoubleClickZoom={true}
+              gestureHandling="greedy"
+              // keyboardShortcuts={false}
+              // disableDoubleClickZoom={true}
               clickableIcons={false}
-              mapTypeId="roadmap"
-              style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+              // mapTypeId="roadmap"
+              style={{ width: '100%', height: '100%' }}
             >
               <MapPreview regionType={regionType} regionName={selectedRegion} />
               <RegionBorder regionType={regionType} regionName={selectedRegion} />

@@ -97,10 +97,10 @@ const CONTINENT_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin:
 // Geographic bounds for all countries
 const COUNTRY_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin: number; lngMax: number }> = {
   // Africa
-  'Algeria': { latMin: 19, latMax: 37, lngMin: -9, lngMax: 12 },
-  'Angola': { latMin: -18, latMax: -5, lngMin: 12, lngMax: 24 },
-  'Benin': { latMin: 6, latMax: 13, lngMin: 1, lngMax: 4 },
-  'Botswana': { latMin: -27, latMax: -18, lngMin: 20, lngMax: 29 },
+  'Algeria': { latMin: 18.95, latMax: 37.5, lngMin: -9, lngMax: 12 },
+  'Angola': { latMin: -18.1, latMax: -5.8, lngMin: 11.6, lngMax: 24.15 },
+  'Benin': { latMin: 6.2, latMax: 12.5, lngMin: 0.75, lngMax: 3.9 },
+  'Botswana': { latMin: -27, latMax: -17.75, lngMin: 19.999, lngMax: 29.4 },
   'Burkina Faso': { latMin: 10, latMax: 15, lngMin: -6, lngMax: 3 },
   'Burundi': { latMin: -4, latMax: -3, lngMin: 29, lngMax: 31 },
   'Cameroon': { latMin: 2, latMax: 13, lngMin: 8, lngMax: 17 },
@@ -154,11 +154,11 @@ const COUNTRY_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin: n
   
   // Asia
   'Afghanistan': { latMin: 29, latMax: 39, lngMin: 60, lngMax: 75 },
-  'Armenia': { latMin: 39, latMax: 42, lngMin: 43, lngMax: 47 },
-  'Azerbaijan': { latMin: 39, latMax: 42, lngMin: 45, lngMax: 51 },
-  'Bahrain': { latMin: 26, latMax: 27, lngMin: 50, lngMax: 51 },
-  'Bangladesh': { latMin: 21, latMax: 27, lngMin: 88, lngMax: 93 },
-  'Bhutan': { latMin: 27, latMax: 28, lngMin: 89, lngMax: 92 },
+  'Armenia': { latMin: 38.8, latMax: 41.3, lngMin: 43.43, lngMax: 46.65 },
+  'Azerbaijan': { latMin: 38.38, latMax: 41.92, lngMin: 44.75, lngMax: 50.8 },
+  'Bahrain': { latMin: 25.78, latMax: 26.35, lngMin: 50.325, lngMax: 50.73 },
+  'Bangladesh': { latMin: 20.7, latMax: 26.65, lngMin: 88, lngMax: 92.75 },
+  'Bhutan': { latMin: 26.7, latMax: 28.25, lngMin: 88.72, lngMax: 92.15 },
   'Brunei': { latMin: 4, latMax: 5, lngMin: 114, lngMax: 116 },
   'Cambodia': { latMin: 10, latMax: 15, lngMin: 102, lngMax: 108 },
   'China': { latMin: 18, latMax: 54, lngMin: 73, lngMax: 135 },
@@ -205,12 +205,12 @@ const COUNTRY_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin: n
   'Yemen': { latMin: 12, latMax: 19, lngMin: 43, lngMax: 54 },
   
   // Europe
-  'Albania': { latMin: 40, latMax: 43, lngMin: 19, lngMax: 21 },
-  'Andorra': { latMin: 42, latMax: 43, lngMin: 1, lngMax: 2 },
-  'Austria': { latMin: 47, latMax: 49, lngMin: 9, lngMax: 17 },
-  'Belarus': { latMin: 51, latMax: 57, lngMin: 23, lngMax: 33 },
-  'Belgium': { latMin: 50, latMax: 52, lngMin: 2, lngMax: 7 },
-  'Bosnia and Herzegovina': { latMin: 43, latMax: 46, lngMin: 16, lngMax: 20 },
+  'Albania': { latMin: 39.5, latMax: 42.75, lngMin: 19, lngMax: 21.15 },
+  'Andorra': { latMin: 42.42, latMax: 42.67, lngMin: 1.4, lngMax: 1.8 },
+  'Austria': { latMin: 46.35, latMax: 49.05, lngMin: 9.5, lngMax: 17.18 },
+  'Belarus': { latMin: 51.2, latMax: 56.18, lngMin: 23, lngMax: 33 },
+  'Belgium': { latMin: 49.48, latMax: 51.52, lngMin: 2.53, lngMax: 6.43 },
+  'Bosnia and Herzegovina': { latMin: 42.55, latMax: 45.28, lngMin: 15.7, lngMax: 19.68 },
   'Bulgaria': { latMin: 41, latMax: 44, lngMin: 22, lngMax: 29 },
   'Croatia': { latMin: 43, latMax: 47, lngMin: 13, lngMax: 20 },
   'Czech Republic': { latMin: 48, latMax: 51, lngMin: 12, lngMax: 19 },
@@ -249,13 +249,13 @@ const COUNTRY_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin: n
   'Switzerland': { latMin: 46, latMax: 48, lngMin: 6, lngMax: 11 },
   'Ukraine': { latMin: 44, latMax: 52, lngMin: 22, lngMax: 40 },
   'United Kingdom': { latMin: 50, latMax: 60, lngMin: -8, lngMax: 2 },
-  'Vatican City': { latMin: 41, latMax: 42, lngMin: 12, lngMax: 13 },
+  'Vatican City': { latMin: 41.9, latMax: 41.9075, lngMin: 12.4455, lngMax: 12.4585 },
   
   // North America
-  'Antigua and Barbuda': { latMin: 17, latMax: 18, lngMin: -62, lngMax: -61 },
-  'Bahamas': { latMin: 23, latMax: 27, lngMin: -80, lngMax: -73 },
-  'Barbados': { latMin: 13, latMax: 14, lngMin: -60, lngMax: -59 },
-  'Belize': { latMin: 16, latMax: 19, lngMin: -90, lngMax: -87 },
+  'Antigua and Barbuda': { latMin: 16.97, latMax: 17.75, lngMin: -61.92, lngMax: -61.65 },
+  'Bahamas': { latMin: 20.9, latMax: 27, lngMin: -79, lngMax: -72.7 },
+  'Barbados': { latMin: 13.04, latMax: 13.34, lngMin: -59.67, lngMax: -59.42 },
+  'Belize': { latMin: 15.85, latMax: 18.55, lngMin: -89.3, lngMax: -87.8 },
   'Canada': { latMin: 42, latMax: 70, lngMin: -141, lngMax: -52 },
   'Costa Rica': { latMin: 8, latMax: 11, lngMin: -86, lngMax: -82 },
   'Cuba': { latMin: 20, latMax: 24, lngMin: -85, lngMax: -74 },
@@ -277,8 +277,8 @@ const COUNTRY_BOUNDS: Record<string, { latMin: number; latMax: number; lngMin: n
   'United States': { latMin: 25, latMax: 50, lngMin: -125, lngMax: -66 },
   
   // South America
-  'Argentina': { latMin: -55, latMax: -22, lngMin: -74, lngMax: -53 },
-  'Bolivia': { latMin: -23, latMax: -10, lngMin: -70, lngMax: -58 },
+  'Argentina': { latMin: -55.2, latMax: -21.7, lngMin: -73.6, lngMax: -53.5 },
+  'Bolivia': { latMin: -23, latMax: -9.65, lngMin: -70, lngMax: -57.45 },
   'Brazil': { latMin: -34, latMax: 5, lngMin: -74, lngMax: -35 },
   'Chile': { latMin: -56, latMax: -17, lngMin: -76, lngMax: -66 },
   'Colombia': { latMin: -4, latMax: 13, lngMin: -79, lngMax: -66 },
@@ -635,8 +635,24 @@ export function getRegionMapView(
     zoom = 4;
   } else if (maxDiff > 8) {
     zoom = 5;
-  } else {
+  } else if (maxDiff > 2) {
     zoom = 6;
+  } else if (maxDiff > 1) {
+    zoom = 7;
+  } else if (maxDiff > 0.5) {
+    zoom = 8;
+  } else if (maxDiff > 0.25) {
+    zoom = 9;
+  } else if (maxDiff > 0.1) {
+    zoom = 10;
+  } else if (maxDiff > 0.05) {
+    zoom = 11;
+  } else if (maxDiff > 0.02) {
+    zoom = 12;
+  } else if (maxDiff > 0.01) {
+    zoom = 13;
+  } else {
+    zoom = 14; // For very small regions, zoom in more
   }
 
   return { center: { lat: centerLat, lng: centerLng }, zoom };

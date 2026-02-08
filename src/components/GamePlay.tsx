@@ -576,6 +576,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             defaultCenter={{ lat: 20, lng: 0 }}
             defaultZoom={1.5}
             gestureHandling="greedy"
+            clickableIcons={false}
             disableDefaultUI={true}
             restriction={{
               latLngBounds: {

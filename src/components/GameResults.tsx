@@ -278,6 +278,7 @@ const GameResults: React.FC<GameResultsProps> = ({
               defaultZoom={1.5}
               disableDefaultUI={true}
               gestureHandling="greedy"
+              clickableIcons={false}
               style={{ width: '100%', height: '100%' }}
             >
               {/* Draw region outline */}
