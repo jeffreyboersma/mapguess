@@ -586,6 +586,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
               <AdvancedMarker 
                 position={guessedLocation}
                 title="Your Guess"
+                anchorLeft='-50%'
+                anchorTop='-50%'
               >
                 <div style={{
                   width: '24px',
@@ -613,6 +615,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
               <AdvancedMarker 
                 position={currentLocation}
                 title="Actual Location"
+                anchorLeft='-50%'
+                anchorTop='-50%'
               >
                 <div style={{
                   width: '24px',
