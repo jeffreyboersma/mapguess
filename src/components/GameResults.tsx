@@ -82,34 +82,39 @@ const GameResults: React.FC<GameResultsProps> = ({
         <div className="bg-gray-800/40 rounded-2xl p-6 mb-8 border border-gray-700/50">
           <h2 className="text-xl font-semibold text-white mb-5">Round Breakdown</h2>
           <div className="space-y-3">
-            {results.map((result, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-900/50 rounded-lg p-4"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-semibold text-white">
-                    {result.round}
+            {results.map((result, index) => {
+              // Check if no guess was made (distance and score both 0)
+              const noGuessMade = result.distance === 0 && result.score === 0;
+              
+              return (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-900/50 rounded-lg p-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-semibold text-white">
+                      {result.round}
+                    </div>
+                    <div>
+                      <div className="text-white text-sm font-medium mb-0.5">
+                        {result.actualLocation.name || `Location ${result.round}`}
+                      </div>
+                      <div className="text-gray-500 text-xs">
+                        {noGuessMade ? 'No guess made' : `${formatDistance(result.distance)} away`}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-white text-sm font-medium mb-0.5">
-                      {result.actualLocation.name || `Location ${result.round}`}
+                  <div className="text-right">
+                    <div className="text-emerald-400 font-semibold">
+                      {result.score.toLocaleString()}
                     </div>
                     <div className="text-gray-500 text-xs">
-                      {formatDistance(result.distance)} away
+                      / {MAX_SCORE_PER_ROUND.toLocaleString()}
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-emerald-400 font-semibold">
-                    {result.score.toLocaleString()}
-                  </div>
-                  <div className="text-gray-500 text-xs">
-                    / {MAX_SCORE_PER_ROUND.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

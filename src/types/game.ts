@@ -18,6 +18,7 @@ export interface GameState {
   locations: Location[];
   results: RoundResult[];
   isComplete: boolean;
+  timeLimit: number | null; // Time limit in seconds per round, null for no limit
 }
 
 export type GameScreen = 'menu' | 'setup' | 'game' | 'results';

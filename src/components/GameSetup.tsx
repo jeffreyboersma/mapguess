@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 
 interface GameSetupProps {
-  onStartGame: (rounds: number) => void;
+  onStartGame: (rounds: number, timeLimit: number | null) => void;
   onBack: () => void;
   error?: string | null;
 }
 
 const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => {
   const [rounds, setRounds] = useState(10);
+  const [timeLimit, setTimeLimit] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const roundOptions = [3, 5, 10, 15, 20];
+  const timeLimitOptions = [
+    { value: null, label: 'No Limit' },
+    { value: 30, label: '30s' },
+    { value: 60, label: '60s' },
+    { value: 90, label: '90s' },
+    { value: 120, label: '2min' },
+  ];
 
   const handleStartGame = () => {
     setIsGenerating(true);
-    onStartGame(rounds);
+    onStartGame(rounds, timeLimit);
   };
 
   return (
@@ -60,6 +68,29 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
                 }`}
               >
                 {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Time Limit Selection */}
+        <div className="mb-10">
+          <label className="block text-gray-300 text-sm font-medium mb-4">
+            Time Limit (per round)
+          </label>
+          <div className="grid grid-cols-5 gap-2">
+            {timeLimitOptions.map((option) => (
+              <button
+                key={option.label}
+                onClick={() => setTimeLimit(option.value)}
+                disabled={isGenerating}
+                className={`py-3 px-4 rounded-lg font-semibold text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                  timeLimit === option.value
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25'
+                    : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/60 border border-gray-700/50'
+                }`}
+              >
+                {option.label}
               </button>
             ))}
           </div>

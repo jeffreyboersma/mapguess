@@ -19,6 +19,7 @@ if (!GOOGLE_MAPS_API_KEY) {
 function App() {
   const [screen, setScreen] = useState<GameScreen>('menu');
   const [totalRounds, setTotalRounds] = useState(10);
+  const [timeLimit, setTimeLimit] = useState<number | null>(null);
   const [currentRound, setCurrentRound] = useState(1);
   const [locations, setLocations] = useState<Location[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
@@ -29,8 +30,9 @@ function App() {
     setScreen('setup');
   };
 
-  const handleStartGame = async (rounds: number) => {
+  const handleStartGame = async (rounds: number, timeLimitValue: number | null) => {
     setTotalRounds(rounds);
+    setTimeLimit(timeLimitValue);
     setCurrentRound(1);
     setResults([]);
     setIsLoadingLocations(true);
@@ -155,6 +157,7 @@ function App() {
             locations={locations}
             currentRound={currentRound}
             totalRounds={totalRounds}
+            timeLimit={timeLimit}
             onRoundComplete={(result) => {
               handleRoundComplete(result);
             }}

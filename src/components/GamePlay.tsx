@@ -40,6 +40,7 @@ interface GamePlayProps {
   locations: Location[];
   currentRound: number;
   totalRounds: number;
+  timeLimit: number | null;
   onRoundComplete: (result: RoundResult) => void;
   onGameComplete: () => void;
   onBackToMenu?: () => void;
@@ -50,6 +51,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
   locations,
   currentRound,
   totalRounds,
+  timeLimit,
   onRoundComplete,
   onGameComplete,
   onBackToMenu,
@@ -60,9 +62,12 @@ const GamePlay: React.FC<GamePlayProps> = ({
   const [roundResult, setRoundResult] = useState<RoundResult | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [showBackConfirmation, setShowBackConfirmation] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [isStreetViewLoaded, setIsStreetViewLoaded] = useState(false);
   const streetViewRef = useRef<HTMLDivElement>(null);
   const panoramaRef = useRef<google.maps.StreetViewPanorama | null>(null);
   const mapCollapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentLocation = locations[currentRound - 1];
 
@@ -137,6 +142,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   if (currentStatus === google.maps.StreetViewStatus.OK) {
                     // Panorama is loaded and ready
                     panoramaRef.current.setVisible(true);
+                    setIsStreetViewLoaded(true);
                   }
                 }
               });
@@ -166,6 +172,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   const currentStatus = panoramaRef.current.getStatus();
                   if (currentStatus === google.maps.StreetViewStatus.OK) {
                     panoramaRef.current.setVisible(true);
+                    setIsStreetViewLoaded(true);
                   }
                 }
               });
@@ -209,6 +216,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setHasSubmitted(false);
     setRoundResult(null);
     setMapExpanded(false);
+    setIsStreetViewLoaded(false);
+    setTimeRemaining(timeLimit);
     
     // Clear any pending collapse timer
     if (mapCollapseTimerRef.current) {
@@ -216,12 +225,47 @@ const GamePlay: React.FC<GamePlayProps> = ({
       mapCollapseTimerRef.current = null;
     }
     
+    // Clear any existing countdown timer
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    
     // Reset map zoom and center
     if (map) {
       map.setCenter({ lat: 20, lng: 0 });
       map.setZoom(1);
     }
-  }, [currentRound, map]);
+  }, [currentRound, map, timeLimit]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    // Only start timer if:
+    // 1. Time limit is set
+    // 2. Street view is loaded
+    // 3. Round hasn't been submitted yet
+    if (timeLimit !== null && isStreetViewLoaded && !hasSubmitted && timeRemaining !== null) {
+      countdownTimerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev === null || prev <= 0) {
+            if (countdownTimerRef.current) {
+              clearInterval(countdownTimerRef.current);
+              countdownTimerRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        if (countdownTimerRef.current) {
+          clearInterval(countdownTimerRef.current);
+          countdownTimerRef.current = null;
+        }
+      };
+    }
+  }, [timeLimit, isStreetViewLoaded, hasSubmitted, timeRemaining]);
 
   const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
     if (hasSubmitted || !event.latLng) return;
@@ -232,33 +276,30 @@ const GamePlay: React.FC<GamePlayProps> = ({
     });
   }, [hasSubmitted]);
 
-  // Map click listener component
-  const MapClickListener: React.FC = () => {
-    const map = useMap(mapId);
+  const handleSubmitGuess = useCallback(() => {
+    if (!currentLocation) return;
 
-    useEffect(() => {
-      if (!map) return;
+    let distance: number;
+    let score: number;
+    let finalGuessedLocation: Location;
 
-      const listener = map.addListener('click', handleMapClick);
-
-      return () => {
-        google.maps.event.removeListener(listener);
-      };
-    }, [map]);
-
-    return null;
-  };
-
-  const handleSubmitGuess = () => {
-    if (!guessedLocation || !currentLocation) return;
-
-    const distance = calculateDistance(currentLocation, guessedLocation);
-    const score = calculateScore(distance);
+    if (guessedLocation) {
+      // User made a guess
+      distance = calculateDistance(currentLocation, guessedLocation);
+      score = calculateScore(distance);
+      finalGuessedLocation = guessedLocation;
+    } else {
+      // No guess made (time ran out) - give 0 points
+      distance = 0;
+      score = 0;
+      // Use a dummy location (won't be shown on map)
+      finalGuessedLocation = currentLocation;
+    }
 
     const result: RoundResult = {
       round: currentRound,
       actualLocation: currentLocation,
-      guessedLocation,
+      guessedLocation: finalGuessedLocation,
       distance,
       score,
     };
@@ -267,8 +308,14 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setHasSubmitted(true);
     onRoundComplete(result);
 
-    // Auto-zoom to show both locations
-    if (map) {
+    // Clear countdown timer
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+
+    // Only auto-zoom if user made a guess
+    if (guessedLocation && map) {
       // Use setTimeout to ensure map is ready
       setTimeout(() => {
         if (!map) return;
@@ -289,7 +336,38 @@ const GamePlay: React.FC<GamePlayProps> = ({
         
         map.fitBounds(bounds);
       }, 150);
+    } else if (!guessedLocation && map) {
+      // No guess - just center on actual location
+      setTimeout(() => {
+        if (!map) return;
+        map.setCenter(currentLocation);
+        map.setZoom(8);
+      }, 150);
     }
+  }, [currentLocation, guessedLocation, currentRound, onRoundComplete, map]);
+
+  // Auto-submit when time runs out
+  useEffect(() => {
+    if (timeRemaining === 0 && !hasSubmitted) {
+      handleSubmitGuess();
+    }
+  }, [timeRemaining, hasSubmitted, handleSubmitGuess]);
+
+  // Map click listener component
+  const MapClickListener: React.FC = () => {
+    const map = useMap(mapId);
+
+    useEffect(() => {
+      if (!map) return;
+
+      const listener = map.addListener('click', handleMapClick);
+
+      return () => {
+        google.maps.event.removeListener(listener);
+      };
+    }, [map]);
+
+    return null;
   };
 
   const handleNextRound = () => {
@@ -324,6 +402,24 @@ const GamePlay: React.FC<GamePlayProps> = ({
           Round {currentRound} / {totalRounds}
         </span>
       </div>
+
+      {/* Countdown Timer */}
+      {timeLimit !== null && !hasSubmitted && timeRemaining !== null && (
+        <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 rounded-lg px-6 py-3 border ${
+          timeRemaining <= 10 
+            ? 'bg-red-600/90 border-red-400/50 animate-pulse' 
+            : 'bg-black/70 backdrop-blur-sm border-gray-700/50'
+        }`}>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-white font-bold text-lg">
+              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Back to Menu Button */}
       {onBackToMenu && (
@@ -400,15 +496,15 @@ const GamePlay: React.FC<GamePlayProps> = ({
             <MapClickListener />
             
             {/* Draw line between guess and actual location after submission */}
-            {hasSubmitted && guessedLocation && currentLocation && (
+            {hasSubmitted && guessedLocation && currentLocation && roundResult && roundResult.score > 0 && (
               <PolylineComponent
                 path={[guessedLocation, currentLocation]}
                 mapId={mapId}
               />
             )}
             
-            {/* User's guess marker */}
-            {guessedLocation && (
+            {/* User's guess marker - show if user made a guess (hide if time expired with no guess) */}
+            {guessedLocation && (!roundResult || roundResult.score > 0) && (
               <AdvancedMarker 
                 position={guessedLocation}
                 title="Your Guess"
@@ -483,23 +579,42 @@ const GamePlay: React.FC<GamePlayProps> = ({
         {/* Results Panel */}
         {hasSubmitted && roundResult && (
           <div className="absolute -top-52 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Distance</p>
-                <p className="text-white text-xl font-bold">{formatDistance(roundResult.distance)}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-400 text-sm mb-1">Score</p>
-                <p className="text-emerald-400 text-xl font-bold">
-                  +{roundResult.score.toLocaleString()} / {MAX_SCORE_PER_ROUND.toLocaleString()}
+            {roundResult.score > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Distance</p>
+                    <p className="text-white text-xl font-bold">{formatDistance(roundResult.distance)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400 text-sm mb-1">Score</p>
+                    <p className="text-emerald-400 text-xl font-bold">
+                      +{roundResult.score.toLocaleString()} / {MAX_SCORE_PER_ROUND.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                
+                {currentLocation.name && (
+                  <p className="text-gray-300 text-sm mb-4">
+                    📍 {currentLocation.name}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="mb-4">
+                <p className="text-red-400 text-lg font-bold mb-2">Time's Up!</p>
+                <p className="text-gray-300 text-sm mb-2">
+                  You didn't make a guess in time.
+                </p>
+                {currentLocation.name && (
+                  <p className="text-gray-300 text-sm mb-2">
+                    📍 The location was: {currentLocation.name}
+                  </p>
+                )}
+                <p className="text-gray-400 text-sm">
+                  Score: <span className="text-red-400 font-bold">0 / {MAX_SCORE_PER_ROUND.toLocaleString()}</span>
                 </p>
               </div>
-            </div>
-            
-            {currentLocation.name && (
-              <p className="text-gray-300 text-sm mb-4">
-                📍 {currentLocation.name}
-              </p>
             )}
 
             <button
