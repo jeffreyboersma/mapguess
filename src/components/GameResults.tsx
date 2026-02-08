@@ -9,6 +9,7 @@ interface GameResultsProps {
   onPlayAgain: () => void;
   onChangeRules: () => void;
   onMainMenu: () => void;
+  regionName?: string;
 }
 
 const GameResults: React.FC<GameResultsProps> = ({
@@ -17,6 +18,7 @@ const GameResults: React.FC<GameResultsProps> = ({
   onPlayAgain,
   onChangeRules,
   onMainMenu,
+  regionName,
 }) => {
   const totalScore = results.reduce((sum, r) => sum + r.score, 0);
   const maxPossibleScore = totalRounds * MAX_SCORE_PER_ROUND;
@@ -39,7 +41,12 @@ const GameResults: React.FC<GameResultsProps> = ({
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+          {regionName && (
+            <p className="text-emerald-400 text-lg font-bold mb-4 mt-2">
+              {regionName}
+            </p>
+          )}
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Game Complete!
           </h1>
           <p className="text-gray-400 text-lg">{message}</p>

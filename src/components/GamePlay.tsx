@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import type { Location, RoundResult } from '../types/game';
+import type { Location, RoundResult, RegionType } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { calculateDistance, calculateScore, formatDistance } from '../utils/scoring';
+import { getRegionMapView } from '../utils/randomLocation';
 
 // Polyline component to draw line between guess and actual location
 const PolylineComponent: React.FC<{
@@ -45,6 +46,8 @@ interface GamePlayProps {
   onGameComplete: () => void;
   onBackToMenu?: () => void;
   mapId: string;
+  regionType?: RegionType;
+  regionName?: string;
 }
 
 const GamePlay: React.FC<GamePlayProps> = ({
@@ -56,6 +59,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
   onGameComplete,
   onBackToMenu,
   mapId,
+  regionType = 'world',
+  regionName,
 }) => {
   const [guessedLocation, setGuessedLocation] = useState<Location | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -231,12 +236,19 @@ const GamePlay: React.FC<GamePlayProps> = ({
       countdownTimerRef.current = null;
     }
     
-    // Reset map zoom and center
+    // Reset map zoom and center based on selected region
     if (map) {
-      map.setCenter({ lat: 20, lng: 0 });
-      map.setZoom(1);
+      const regionView = getRegionMapView(regionType, regionName);
+      if (regionView) {
+        map.setCenter(regionView.center);
+        map.setZoom(regionView.zoom);
+      } else {
+        // Default world view
+        map.setCenter({ lat: 20, lng: 0 });
+        map.setZoom(1);
+      }
     }
-  }, [currentRound, map, timeLimit]);
+  }, [currentRound, map, timeLimit, regionType, regionName]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -401,6 +413,11 @@ const GamePlay: React.FC<GamePlayProps> = ({
         <span className="text-white font-semibold">
           Round {currentRound} / {totalRounds}
         </span>
+        {regionName && (
+          <div className="text-emerald-400 text-sm mt-1">
+            {regionName}
+          </div>
+        )}
       </div>
 
       {/* Countdown Timer */}
@@ -496,7 +513,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             <MapClickListener />
             
             {/* Draw line between guess and actual location after submission */}
-            {hasSubmitted && guessedLocation && currentLocation && roundResult && roundResult.score > 0 && (
+            {hasSubmitted && guessedLocation && currentLocation && (
               <PolylineComponent
                 path={[guessedLocation, currentLocation]}
                 mapId={mapId}
@@ -504,7 +521,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             )}
             
             {/* User's guess marker - show if user made a guess (hide if time expired with no guess) */}
-            {guessedLocation && (!roundResult || roundResult.score > 0) && (
+            {guessedLocation && (
               <AdvancedMarker 
                 position={guessedLocation}
                 title="Your Guess"
@@ -579,7 +596,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
         {/* Results Panel */}
         {hasSubmitted && roundResult && (
           <div className="absolute -top-52 left-0 right-0 bg-black/90 backdrop-blur-sm rounded-xl p-5 border border-gray-700/50">
-            {roundResult.score > 0 ? (
+            {guessedLocation ? (
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div>
@@ -588,8 +605,8 @@ const GamePlay: React.FC<GamePlayProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400 text-sm mb-1">Score</p>
-                    <p className="text-emerald-400 text-xl font-bold">
-                      +{roundResult.score.toLocaleString()} / {MAX_SCORE_PER_ROUND.toLocaleString()}
+                    <p className={`text-xl font-bold ${roundResult.score > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {roundResult.score > 0 ? '+' : ''}{roundResult.score.toLocaleString()} / {MAX_SCORE_PER_ROUND.toLocaleString()}
                     </p>
                   </div>
                 </div>

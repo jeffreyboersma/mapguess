@@ -560,5 +560,70 @@ export async function generateRandomLocations(
   return locations;
 }
 
+/**
+ * Gets the map view bounds (center and zoom) for a given region
+ * Returns null for world view (default zoom)
+ */
+export function getRegionMapView(
+  regionType: 'world' | 'continent' | 'country',
+  regionName?: string
+): { center: { lat: number; lng: number }; zoom: number } | null {
+  if (regionType === 'world') {
+    return null; // Use default world view
+  }
+
+  let bounds: { latMin: number; latMax: number; lngMin: number; lngMax: number } | undefined;
+
+  if (regionType === 'country' && regionName) {
+    bounds = COUNTRY_BOUNDS[regionName];
+  } else if (regionType === 'continent' && regionName) {
+    bounds = CONTINENT_BOUNDS[regionName];
+  }
+
+  if (!bounds) {
+    return null; // Fallback to world view if no bounds found
+  }
+
+  // Calculate center of the bounds
+  const centerLat = (bounds.latMin + bounds.latMax) / 2;
+  let centerLng: number;
+  
+  // Handle longitude wrapping (e.g., Oceania)
+  if (bounds.lngMin > bounds.lngMax) {
+    // Wrapped around 180°/-180°
+    const range1 = 180 - bounds.lngMin;
+    centerLng = bounds.lngMin + range1 / 2;
+    if (centerLng > 180) centerLng -= 360;
+  } else {
+    centerLng = (bounds.lngMin + bounds.lngMax) / 2;
+  }
+
+  // Calculate appropriate zoom level based on the bounds size
+  const latDiff = Math.abs(bounds.latMax - bounds.latMin);
+  const lngDiff = bounds.lngMin > bounds.lngMax 
+    ? (180 - bounds.lngMin) + (bounds.lngMax - (-180))
+    : Math.abs(bounds.lngMax - bounds.lngMin);
+  
+  const maxDiff = Math.max(latDiff, lngDiff);
+  
+  // Determine zoom level based on size
+  let zoom: number;
+  if (maxDiff > 100) {
+    zoom = 2;
+  } else if (maxDiff > 60) {
+    zoom = 3;
+  } else if (maxDiff > 30) {
+    zoom = 4;
+  } else if (maxDiff > 15) {
+    zoom = 5;
+  } else if (maxDiff > 8) {
+    zoom = 6;
+  } else {
+    zoom = 7;
+  }
+
+  return { center: { lat: centerLat, lng: centerLng }, zoom };
+}
+
 // Export the region data for use in UI
 export { CONTINENTS, COUNTRIES };

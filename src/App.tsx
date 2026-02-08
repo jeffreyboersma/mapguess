@@ -181,6 +181,8 @@ function App() {
             onGameComplete={handleNextRound}
             onBackToMenu={handleMainMenu}
             mapId={GOOGLE_MAP_ID}
+            regionType={regionType}
+            regionName={regionName}
           />
         )}
         
@@ -191,6 +193,7 @@ function App() {
             onPlayAgain={handlePlayAgain}
             onChangeRules={handleChangeRules}
             onMainMenu={handleMainMenu}
+            regionName={regionName}
           />
         )}
       </div>
