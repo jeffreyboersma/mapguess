@@ -66,12 +66,14 @@ const MapBoundsFitter: React.FC<{
     let hasPoints = false;
 
     results.forEach((result) => {
-      // Skip rounds where no guess was made
-      if (result.distance === 0 && result.score === 0) return;
-
+      // Always include the actual location
       bounds.extend(result.actualLocation);
-      bounds.extend(result.guessedLocation);
       hasPoints = true;
+      
+      // Include guessed location only if a guess was made
+      if (!(result.distance === 0 && result.score === 0)) {
+        bounds.extend(result.guessedLocation);
+      }
     });
 
     // Fit the map to the bounds if we have points
@@ -250,14 +252,12 @@ const GameResults: React.FC<GameResultsProps> = ({
               
               {/* Draw markers for all locations */}
               {results.map((result, index) => {
-                // Skip rounds where no guess was made
-                if (result.distance === 0 && result.score === 0) return null;
-                
+                const noGuessMade = result.distance === 0 && result.score === 0;
                 const roundNumber = String(index + 1);
                 
                 return (
                   <React.Fragment key={`markers-${index}`}>
-                    {/* Actual location marker (green) */}
+                    {/* Actual location marker (green) - always show */}
                     <AdvancedMarker
                       position={{ lat: result.actualLocation.lat, lng: result.actualLocation.lng }}
                       title={`Round ${roundNumber}: Actual Location`}
@@ -283,31 +283,33 @@ const GameResults: React.FC<GameResultsProps> = ({
                       </div>
                     </AdvancedMarker>
                     
-                    {/* Guessed location marker (red) */}
-                    <AdvancedMarker
-                      position={{ lat: result.guessedLocation.lat, lng: result.guessedLocation.lng }}
-                      title={`Round ${roundNumber}: Your Guess`}
-                      zIndex={10}
-                      anchorLeft='-50%'
-                      anchorTop='-50%'
-                    >
-                      <div style={{
-                        width: '28px',
-                        height: '28px',
-                        backgroundColor: '#ef4444',
-                        borderRadius: '50%',
-                        border: '3px solid white',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '14px',
-                        fontWeight: 'bold'
-                      }}>
-                        {roundNumber}
-                      </div>
-                    </AdvancedMarker>
+                    {/* Guessed location marker (red) - only show if guess was made */}
+                    {!noGuessMade && (
+                      <AdvancedMarker
+                        position={{ lat: result.guessedLocation.lat, lng: result.guessedLocation.lng }}
+                        title={`Round ${roundNumber}: Your Guess`}
+                        zIndex={10}
+                        anchorLeft='-50%'
+                        anchorTop='-50%'
+                      >
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          backgroundColor: '#ef4444',
+                          borderRadius: '50%',
+                          border: '3px solid white',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '14px',
+                          fontWeight: 'bold'
+                        }}>
+                          {roundNumber}
+                        </div>
+                      </AdvancedMarker>
+                    )}
                   </React.Fragment>
                 );
               })}
