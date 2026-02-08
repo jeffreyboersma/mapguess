@@ -290,9 +290,9 @@ const GamePlay: React.FC<GamePlayProps> = ({
         map.setCenter(regionView.center);
         map.setZoom(regionView.zoom);
       } else {
-        // Default world view
+        // Default world view - use zoom 2 instead of 1 to fix fitBounds issues
         map.setCenter({ lat: 20, lng: 0 });
-        map.setZoom(1);
+        map.setZoom(1.5);
       }
     }
   }, [currentRound, map, timeLimit, regionType, regionName]);
@@ -554,7 +554,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
             id={mapId}
             mapId={mapId}
             defaultCenter={{ lat: 20, lng: 0 }}
-            defaultZoom={1}
+            defaultZoom={1.5}
             gestureHandling="greedy"
             disableDefaultUI={true}
             restriction={{

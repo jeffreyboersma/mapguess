@@ -152,7 +152,7 @@ const GameResults: React.FC<GameResultsProps> = ({
             <Map
               mapId={mapId}
               defaultCenter={{ lat: 0, lng: 0 }}
-              defaultZoom={2}
+              defaultZoom={1}
               disableDefaultUI={true}
               gestureHandling="greedy"
               style={{ width: '100%', height: '100%' }}
