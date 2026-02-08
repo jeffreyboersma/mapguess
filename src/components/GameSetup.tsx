@@ -346,6 +346,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
           </label>
           <div className="w-full h-64 rounded-xl overflow-hidden border border-gray-700/50 shadow-lg">
             <Map
+              key={`${regionType}-${selectedRegion || 'none'}`}
               defaultCenter={{ lat: 20, lng: 0 }}
               defaultZoom={2}
               disableDefaultUI={true}
