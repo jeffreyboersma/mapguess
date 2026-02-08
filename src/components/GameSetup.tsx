@@ -81,6 +81,12 @@ const MapPreview: React.FC<{ regionType: RegionType; regionName?: string }> = ({
   useEffect(() => {
     if (!map) return;
 
+    // Only update map if we have a valid selection:
+    // - world is always valid
+    // - continent/country need a regionName
+    const hasValidSelection = regionType === 'world' || (regionName && regionName.length > 0);
+    if (!hasValidSelection) return;
+
     const mapView = getRegionMapView(regionType, regionName);
     
     if (mapView) {
@@ -346,9 +352,9 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
           </label>
           <div className="w-full h-64 rounded-xl overflow-hidden border border-gray-700/50 shadow-lg">
             <Map
-              key={`${regionType}-${selectedRegion || 'none'}`}
+              key={regionType === 'world' || selectedRegion ? `${regionType}-${selectedRegion || 'world'}` : 'unselected'}
               defaultCenter={{ lat: 20, lng: 0 }}
-              defaultZoom={2}
+              defaultZoom={1}
               disableDefaultUI={true}
               gestureHandling="none"
               keyboardShortcuts={false}
@@ -400,7 +406,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
         {/* Start Button */}
         <button
           onClick={handleStartGame}
-          disabled={isGenerating}
+          disabled={isGenerating || (regionType !== 'world' && !selectedRegion)}
           className="w-full py-4 px-6 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-lg rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
         >
           {isGenerating ? 'Generating Locations...' : 'Start Game'}
