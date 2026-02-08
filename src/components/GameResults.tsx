@@ -1,7 +1,65 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import type { RoundResult } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { formatDistance } from '../utils/scoring';
+
+// Component to draw all polylines for the results
+const ResultsPolylines: React.FC<{
+  results: RoundResult[];
+}> = ({ results }) => {
+  const map = useMap();
+  const polylinesRef = useRef<google.maps.Polyline[]>([]);
+
+  useEffect(() => {
+    if (!map) {
+      console.log('No map available for polylines');
+      return;
+    }
+
+    console.log('Map available, creating polylines for', results.length, 'results');
+
+    // Clear existing polylines
+    polylinesRef.current.forEach(polyline => polyline.setMap(null));
+    polylinesRef.current = [];
+
+    // Create polylines for each round
+    const colors = ['#ef4444', '#f59e0b', '#6d6e1a', '#3b82f6', '#8b5cf6', '#ec4899'];
+    
+    results.forEach((result, index) => {
+      // Skip rounds where no guess was made
+      if (result.distance === 0 && result.score === 0) return;
+
+      const color = colors[index % colors.length];
+      const path = [
+        { lat: result.actualLocation.lat, lng: result.actualLocation.lng },
+        { lat: result.guessedLocation.lat, lng: result.guessedLocation.lng }
+      ];
+
+      const polyline = new google.maps.Polyline({
+        path,
+        geodesic: true,
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        map,
+        zIndex: 1,
+      });
+
+      polylinesRef.current.push(polyline);
+      console.log(`Created polyline ${index} from`, path[0], 'to', path[1]);
+    });
+
+    console.log('Total polylines created:', polylinesRef.current.length);
+
+    return () => {
+      polylinesRef.current.forEach(polyline => polyline.setMap(null));
+      polylinesRef.current = [];
+    };
+  }, [map, results]);
+
+  return null;
+};
 
 interface GameResultsProps {
   results: RoundResult[];
@@ -10,6 +68,7 @@ interface GameResultsProps {
   onChangeRules: () => void;
   onMainMenu: () => void;
   regionName?: string;
+  mapId: string;
 }
 
 const GameResults: React.FC<GameResultsProps> = ({
@@ -19,6 +78,7 @@ const GameResults: React.FC<GameResultsProps> = ({
   onChangeRules,
   onMainMenu,
   regionName,
+  mapId,
 }) => {
   const totalScore = results.reduce((sum, r) => sum + r.score, 0);
   const maxPossibleScore = totalRounds * MAX_SCORE_PER_ROUND;
@@ -82,6 +142,98 @@ const GameResults: React.FC<GameResultsProps> = ({
 
           <div className="text-gray-500 text-sm">
             {totalScore.toLocaleString()} / {maxPossibleScore.toLocaleString()} points possible
+          </div>
+        </div>
+
+        {/* Map Summary */}
+        <div className="bg-gray-800/40 rounded-2xl p-6 mb-8 border border-gray-700/50">
+          <h2 className="text-xl font-semibold text-white mb-5">Game Summary</h2>
+          <div className="relative w-full h-[400px] rounded-lg overflow-hidden">
+            <Map
+              mapId={mapId}
+              defaultCenter={{ lat: 0, lng: 0 }}
+              defaultZoom={2}
+              disableDefaultUI={true}
+              gestureHandling="greedy"
+              style={{ width: '100%', height: '100%' }}
+            >
+              {/* Draw all polylines */}
+              <ResultsPolylines results={results} />
+              
+              {/* Draw markers for all locations */}
+              {results.map((result, index) => {
+                // Skip rounds where no guess was made
+                if (result.distance === 0 && result.score === 0) return null;
+                
+                const roundNumber = String(index + 1);
+                
+                return (
+                  <React.Fragment key={`markers-${index}`}>
+                    {/* Actual location marker (green) */}
+                    <AdvancedMarker
+                      position={{ lat: result.actualLocation.lat, lng: result.actualLocation.lng }}
+                      title={`Round ${roundNumber}: Actual Location`}
+                      zIndex={10}
+                      anchorLeft='-50%'
+                      anchorTop='-50%'
+                    >
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: '#10b981',
+                        borderRadius: '50%',
+                        border: '3px solid white',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}>
+                        {roundNumber}
+                      </div>
+                    </AdvancedMarker>
+                    
+                    {/* Guessed location marker (red) */}
+                    <AdvancedMarker
+                      position={{ lat: result.guessedLocation.lat, lng: result.guessedLocation.lng }}
+                      title={`Round ${roundNumber}: Your Guess`}
+                      zIndex={10}
+                      anchorLeft='-50%'
+                      anchorTop='-50%'
+                    >
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: '#ef4444',
+                        borderRadius: '50%',
+                        border: '3px solid white',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}>
+                        {roundNumber}
+                      </div>
+                    </AdvancedMarker>
+                  </React.Fragment>
+                );
+              })}
+            </Map>
+          </div>
+          <div className="mt-4 flex items-center justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span className="text-gray-400">Actual Location</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <span className="text-gray-400">Your Guess</span>
+            </div>
           </div>
         </div>
 

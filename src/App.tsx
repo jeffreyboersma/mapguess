@@ -194,6 +194,7 @@ function App() {
             onChangeRules={handleChangeRules}
             onMainMenu={handleMainMenu}
             regionName={regionName}
+            mapId={GOOGLE_MAP_ID}
           />
         )}
       </div>
