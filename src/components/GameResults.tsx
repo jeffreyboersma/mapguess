@@ -168,6 +168,20 @@ const GameResults: React.FC<GameResultsProps> = ({
   const percentage = Math.round((totalScore / maxPossibleScore) * 100);
   const averageDistance = results.reduce((sum, r) => sum + r.distance, 0) / results.length;
 
+  // Handle Enter key to play again
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        onPlayAgain();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [onPlayAgain]);
+
   const getGrade = () => {
     if (percentage >= 90) return { grade: 'S', color: 'text-yellow-400', message: 'Perfect!' };
     if (percentage >= 80) return { grade: 'A', color: 'text-emerald-400', message: 'Excellent!' };
