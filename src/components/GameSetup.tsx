@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { CONTINENTS, COUNTRIES } from '../utils/randomLocation';
+import type { RegionType } from '../types/game';
 
 interface GameSetupProps {
-  onStartGame: (rounds: number, timeLimit: number | null) => void;
+  onStartGame: (rounds: number, timeLimit: number | null, regionType: RegionType, regionName?: string) => void;
   onBack: () => void;
   error?: string | null;
 }
@@ -9,6 +11,8 @@ interface GameSetupProps {
 const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => {
   const [rounds, setRounds] = useState(10);
   const [timeLimit, setTimeLimit] = useState<number | null>(null);
+  const [regionType, setRegionType] = useState<RegionType>('world');
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const roundOptions = [3, 5, 10, 15, 20];
@@ -20,9 +24,14 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
     { value: 120, label: '2min' },
   ];
 
+  const handleRegionTypeChange = (type: RegionType) => {
+    setRegionType(type);
+    setSelectedRegion('');
+  };
+
   const handleStartGame = () => {
     setIsGenerating(true);
-    onStartGame(rounds, timeLimit);
+    onStartGame(rounds, timeLimit, regionType, selectedRegion || undefined);
   };
 
   return (
@@ -94,6 +103,82 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Region Selection */}
+        <div className="mb-10">
+          <label className="block text-gray-300 text-sm font-medium mb-4">
+            Region
+          </label>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <button
+              onClick={() => handleRegionTypeChange('world')}
+              disabled={isGenerating}
+              className={`py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                regionType === 'world'
+                  ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/60 border border-gray-700/50'
+              }`}
+            >
+              World
+            </button>
+            <button
+              onClick={() => handleRegionTypeChange('continent')}
+              disabled={isGenerating}
+              className={`py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                regionType === 'continent'
+                  ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/60 border border-gray-700/50'
+              }`}
+            >
+              Continent
+            </button>
+            <button
+              onClick={() => handleRegionTypeChange('country')}
+              disabled={isGenerating}
+              className={`py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                regionType === 'country'
+                  ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/60 border border-gray-700/50'
+              }`}
+            >
+              Country
+            </button>
+          </div>
+
+          {/* Continent Selector */}
+          {regionType === 'continent' && (
+            <select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              disabled={isGenerating}
+              className="w-full py-3 px-4 rounded-lg bg-gray-800/60 text-gray-300 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <option value="">Select a Continent</option>
+              {CONTINENTS.map((continent) => (
+                <option key={continent} value={continent}>
+                  {continent}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Country Selector */}
+          {regionType === 'country' && (
+            <select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              disabled={isGenerating}
+              className="w-full py-3 px-4 rounded-lg bg-gray-800/60 text-gray-300 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <option value="">Select a Country</option>
+              {COUNTRIES.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Game Info */}

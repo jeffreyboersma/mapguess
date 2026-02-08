@@ -4,7 +4,7 @@ import MainMenu from './components/MainMenu';
 import GameSetup from './components/GameSetup';
 import GamePlay from './components/GamePlay';
 import GameResults from './components/GameResults';
-import type { GameScreen, RoundResult, Location } from './types/game';
+import type { GameScreen, RoundResult, Location, RegionType } from './types/game';
 import { generateRandomLocations } from './utils/randomLocation';
 import './index.css';
 
@@ -25,21 +25,34 @@ function App() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [regionType, setRegionType] = useState<RegionType>('world');
+  const [regionName, setRegionName] = useState<string | undefined>();
 
   const handleSelectSinglePlayer = () => {
     setScreen('setup');
   };
 
-  const handleStartGame = async (rounds: number, timeLimitValue: number | null) => {
+  const handleStartGame = async (
+    rounds: number, 
+    timeLimitValue: number | null,
+    selectedRegionType: RegionType,
+    selectedRegionName?: string
+  ) => {
     setTotalRounds(rounds);
     setTimeLimit(timeLimitValue);
+    setRegionType(selectedRegionType);
+    setRegionName(selectedRegionName);
     setCurrentRound(1);
     setResults([]);
     setIsLoadingLocations(true);
     setLocationError(null);
 
     try {
-      const generatedLocations = await generateRandomLocations(rounds);
+      const generatedLocations = await generateRandomLocations(
+        rounds,
+        selectedRegionType,
+        selectedRegionName
+      );
       setLocations(generatedLocations);
       setScreen('game');
     } catch (error) {
@@ -71,7 +84,11 @@ function App() {
     setScreen('setup'); // Show setup screen while generating
 
     try {
-      const generatedLocations = await generateRandomLocations(totalRounds);
+      const generatedLocations = await generateRandomLocations(
+        totalRounds,
+        regionType,
+        regionName
+      );
       setLocations(generatedLocations);
       setScreen('game');
     } catch (error) {

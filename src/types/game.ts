@@ -12,6 +12,13 @@ export interface RoundResult {
   score: number;
 }
 
+export type RegionType = 'world' | 'continent' | 'country';
+
+export interface Region {
+  type: RegionType;
+  name: string;
+}
+
 export interface GameState {
   currentRound: number;
   totalRounds: number;
@@ -19,6 +26,7 @@ export interface GameState {
   results: RoundResult[];
   isComplete: boolean;
   timeLimit: number | null; // Time limit in seconds per round, null for no limit
+  region?: Region; // Selected region for the game
 }
 
 export type GameScreen = 'menu' | 'setup' | 'game' | 'results';
