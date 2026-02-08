@@ -623,20 +623,20 @@ export function getRegionMapView(
   
   const maxDiff = Math.max(latDiff, lngDiff);
   
-  // Determine zoom level based on size
+  // Determine zoom level based on size (conservative zoom for full visibility)
   let zoom: number;
   if (maxDiff > 100) {
-    zoom = 2;
+    zoom = 1;
   } else if (maxDiff > 60) {
-    zoom = 3;
+    zoom = 2;
   } else if (maxDiff > 30) {
-    zoom = 4;
+    zoom = 3;
   } else if (maxDiff > 15) {
-    zoom = 5;
+    zoom = 4;
   } else if (maxDiff > 8) {
-    zoom = 6;
+    zoom = 5;
   } else {
-    zoom = 7;
+    zoom = 6;
   }
 
   return { center: { lat: centerLat, lng: centerLng }, zoom };

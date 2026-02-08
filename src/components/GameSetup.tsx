@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { CONTINENTS, COUNTRIES } from '../utils/randomLocation';
+import React, { useState, useEffect, useRef } from 'react';
+import { Map, useMap } from '@vis.gl/react-google-maps';
+import { CONTINENTS, COUNTRIES, getRegionMapView } from '../utils/randomLocation';
 import type { RegionType } from '../types/game';
 
 interface GameSetupProps {
@@ -7,6 +8,30 @@ interface GameSetupProps {
   onBack: () => void;
   error?: string | null;
 }
+
+const MapPreview: React.FC<{ regionType: RegionType; regionName?: string }> = ({ regionType, regionName }) => {
+  const map = useMap();
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const mapView = getRegionMapView(regionType, regionName);
+    
+    if (mapView) {
+      map.setCenter(mapView.center);
+      map.setZoom(mapView.zoom);
+    } else {
+      // Default world view
+      map.setCenter({ lat: 20, lng: 0 });
+      map.setZoom(1);
+    }
+    
+    hasInitialized.current = true;
+  }, [map, regionType, regionName]);
+
+  return null;
+};
 
 const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => {
   const [rounds, setRounds] = useState(10);
@@ -247,6 +272,28 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
               )}
             </div>
           )}
+        </div>
+
+        {/* Region Map Preview */}
+        <div className="mb-10">
+          <label className="block text-gray-300 text-sm font-medium mb-4">
+            Region Preview
+          </label>
+          <div className="w-full h-64 rounded-xl overflow-hidden border border-gray-700/50 shadow-lg">
+            <Map
+              defaultCenter={{ lat: 20, lng: 0 }}
+              defaultZoom={2}
+              disableDefaultUI={true}
+              gestureHandling="none"
+              keyboardShortcuts={false}
+              disableDoubleClickZoom={true}
+              clickableIcons={false}
+              mapTypeId="roadmap"
+              style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+            >
+              <MapPreview regionType={regionType} regionName={selectedRegion} />
+            </Map>
+          </div>
         </div>
 
         {/* Game Info */}
