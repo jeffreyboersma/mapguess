@@ -4,6 +4,37 @@ import type { RoundResult } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { formatDistance } from '../utils/scoring';
 
+// Component to auto-fit map bounds to show all markers
+const MapBoundsFitter: React.FC<{
+  results: RoundResult[];
+}> = ({ results }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Collect all points from results
+    const bounds = new google.maps.LatLngBounds();
+    let hasPoints = false;
+
+    results.forEach((result) => {
+      // Skip rounds where no guess was made
+      if (result.distance === 0 && result.score === 0) return;
+
+      bounds.extend(result.actualLocation);
+      bounds.extend(result.guessedLocation);
+      hasPoints = true;
+    });
+
+    // Fit the map to the bounds if we have points
+    if (hasPoints) {
+      map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 }); // Add padding
+    }
+  }, [map, results]);
+
+  return null;
+};
+
 // Component to draw all polylines for the results
 const ResultsPolylines: React.FC<{
   results: RoundResult[];
@@ -152,11 +183,14 @@ const GameResults: React.FC<GameResultsProps> = ({
             <Map
               mapId={mapId}
               defaultCenter={{ lat: 0, lng: 0 }}
-              defaultZoom={1}
+              defaultZoom={1.5}
               disableDefaultUI={true}
               gestureHandling="greedy"
               style={{ width: '100%', height: '100%' }}
             >
+              {/* Auto-fit bounds to show all markers */}
+              <MapBoundsFitter results={results} />
+              
               {/* Draw all polylines */}
               <ResultsPolylines results={results} />
               
