@@ -423,11 +423,17 @@ const GamePlay: React.FC<GamePlayProps> = ({
     }
   }, [timeRemaining, hasSubmitted, handleSubmitGuess]);
 
-  // Handle Enter key to submit guess
+  // Handle Enter key to submit guess or continue to next round
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && guessedLocation && !hasSubmitted) {
-        handleSubmitGuess();
+      if (event.key === 'Enter') {
+        if (hasSubmitted) {
+          // After submission, Enter goes to next round/results
+          handleNextRound();
+        } else if (guessedLocation) {
+          // Before submission, Enter submits the guess
+          handleSubmitGuess();
+        }
       }
     };
 
