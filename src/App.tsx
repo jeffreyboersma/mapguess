@@ -61,10 +61,6 @@ function App() {
     }
   }, [currentRound, totalRounds]);
 
-  const handleGameComplete = () => {
-    setScreen('results');
-  };
-
   const handlePlayAgain = async () => {
     setCurrentRound(1);
     setResults([]);

@@ -9,13 +9,11 @@ interface GameSetupProps {
 const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => {
   const [rounds, setRounds] = useState(10);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
 
   const roundOptions = [3, 5, 10, 15, 20];
 
   const handleStartGame = () => {
     setIsGenerating(true);
-    setGenerationProgress({ current: 0, total: rounds });
     onStartGame(rounds);
   };
 
