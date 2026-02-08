@@ -423,6 +423,20 @@ const GamePlay: React.FC<GamePlayProps> = ({
     }
   }, [timeRemaining, hasSubmitted, handleSubmitGuess]);
 
+  // Handle Enter key to submit guess
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && guessedLocation && !hasSubmitted) {
+        handleSubmitGuess();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [guessedLocation, hasSubmitted, handleSubmitGuess]);
+
   // Map click listener component
   const MapClickListener: React.FC = () => {
     const map = useMap(mapId);
