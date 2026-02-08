@@ -642,5 +642,25 @@ export function getRegionMapView(
   return { center: { lat: centerLat, lng: centerLng }, zoom };
 }
 
+/**
+ * Gets the bounds for a given region
+ */
+export function getRegionBounds(
+  regionType: 'world' | 'continent' | 'country',
+  regionName?: string
+): { latMin: number; latMax: number; lngMin: number; lngMax: number } | null {
+  if (regionType === 'world') {
+    return null; // World has no bounds
+  }
+
+  if (regionType === 'country' && regionName) {
+    return COUNTRY_BOUNDS[regionName] || null;
+  } else if (regionType === 'continent' && regionName) {
+    return CONTINENT_BOUNDS[regionName] || null;
+  }
+
+  return null;
+}
+
 // Export the region data for use in UI
 export { CONTINENTS, COUNTRIES };

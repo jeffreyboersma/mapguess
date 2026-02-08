@@ -3,7 +3,7 @@ import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import type { Location, RoundResult, RegionType } from '../types/game';
 import { MAX_SCORE_PER_ROUND } from '../types/game';
 import { calculateDistance, calculateScore, formatDistance } from '../utils/scoring';
-import { getRegionMapView } from '../utils/randomLocation';
+import { getRegionMapView, getRegionBounds } from '../utils/randomLocation';
 
 // Polyline component to draw line between guess and actual location
 const PolylineComponent: React.FC<{
@@ -298,7 +298,18 @@ const GamePlay: React.FC<GamePlayProps> = ({
     if (guessedLocation) {
       // User made a guess
       distance = calculateDistance(currentLocation, guessedLocation);
-      score = calculateScore(distance);
+      
+      // Get region bounds if a region is selected
+      const regionBounds = regionType && regionType !== 'world' && regionName
+        ? getRegionBounds(regionType, regionName)
+        : null;
+      
+      // Calculate score with region bounds if available
+      score = calculateScore(
+        distance, 
+        guessedLocation, 
+        regionBounds || undefined
+      );
       finalGuessedLocation = guessedLocation;
     } else {
       // No guess made (time ran out) - give 0 points
@@ -356,7 +367,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
         map.setZoom(8);
       }, 150);
     }
-  }, [currentLocation, guessedLocation, currentRound, onRoundComplete, map]);
+  }, [currentLocation, guessedLocation, currentRound, onRoundComplete, map, regionType, regionName]);
 
   // Auto-submit when time runs out
   useEffect(() => {
