@@ -626,7 +626,7 @@ export function getRegionMapView(
   // Determine zoom level based on size (conservative zoom for full visibility)
   let zoom: number;
   if (maxDiff > 100) {
-    zoom = 1;
+    zoom = 1.5;
   } else if (maxDiff > 60) {
     zoom = 2;
   } else if (maxDiff > 30) {

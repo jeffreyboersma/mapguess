@@ -492,7 +492,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
           Round {currentRound} / {totalRounds}
         </span>
         {regionName && (
-          <div className="text-emerald-400 text-sm mt-1">
+          <div className="text-emerald-400 font-bold text-sm mt-1">
             {regionName}
           </div>
         )}
@@ -728,15 +728,6 @@ const GamePlay: React.FC<GamePlayProps> = ({
           </div>
         )}
       </div>
-
-      {/* Hint text */}
-      {!hasSubmitted && !mapExpanded && (
-        <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-5 py-3 border border-gray-700/50">
-          <span className="text-gray-300 text-sm">
-            Hover over the map to expand • Click to place your guess
-          </span>
-        </div>
-      )}
     </div>
   );
 };
