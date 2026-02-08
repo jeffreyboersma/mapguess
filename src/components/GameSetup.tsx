@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, useMap } from '@vis.gl/react-google-maps';
-import { CONTINENTS, COUNTRIES, getRegionMapView } from '../utils/randomLocation';
+import { CONTINENTS, COUNTRIES, getRegionMapView, getRegionBounds } from '../utils/randomLocation';
 import type { RegionType } from '../types/game';
 
 interface GameSetupProps {
@@ -8,6 +8,71 @@ interface GameSetupProps {
   onBack: () => void;
   error?: string | null;
 }
+
+// RegionBorder component to draw outline of selected region
+const RegionBorder: React.FC<{
+  regionType: RegionType;
+  regionName?: string;
+}> = ({ regionType, regionName }) => {
+  const map = useMap();
+  const polygonRef = useRef<google.maps.Polygon | null>(null);
+
+  useEffect(() => {
+    if (!map || regionType === 'world' || !regionName) {
+      // Clean up existing polygon
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
+
+    const bounds = getRegionBounds(regionType, regionName);
+    if (!bounds) {
+      // Clean up existing polygon if no bounds
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
+
+    // Create a rectangle outlining the selected region
+    const regionBorder = [
+      { lat: bounds.latMax, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMax },
+      { lat: bounds.latMin, lng: bounds.lngMin },
+      { lat: bounds.latMax, lng: bounds.lngMin },
+    ];
+
+    // Clean up existing polygon
+    if (polygonRef.current) {
+      polygonRef.current.setMap(null);
+    }
+
+    // Create polygon with just the border (no fill)
+    polygonRef.current = new google.maps.Polygon({
+      paths: [regionBorder],
+      strokeColor: '#10b981',
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: 'transparent',
+      fillOpacity: 0,
+      map,
+      clickable: false,
+    });
+
+    return () => {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+    };
+  }, [map, regionType, regionName]);
+
+  return null;
+};
 
 const MapPreview: React.FC<{ regionType: RegionType; regionName?: string }> = ({ regionType, regionName }) => {
   const map = useMap();
@@ -292,6 +357,7 @@ const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, onBack, error }) => 
               style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
             >
               <MapPreview regionType={regionType} regionName={selectedRegion} />
+              <RegionBorder regionType={regionType} regionName={selectedRegion} />
             </Map>
           </div>
         </div>
