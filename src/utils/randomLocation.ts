@@ -451,7 +451,8 @@ async function getLocationNameWithCountry(
 async function findRandomStreetViewLocation(
   maxAttempts: number = 20,
   regionType: 'world' | 'continent' | 'country' = 'world',
-  regionName?: string
+  regionName?: string,
+  usedPanoIds: Set<string> = new Set()
 ): Promise<Location | null> {
   const streetViewService = new google.maps.StreetViewService();
 
@@ -459,13 +460,16 @@ async function findRandomStreetViewLocation(
     const coords = generateRandomCoordinates(regionType, regionName);
     
     try {
-      // Use a large radius to increase chances of finding coverage
+      // Use a smaller radius to get more diverse locations
+      // Start with 50km, but increase if we're having trouble finding locations
+      const radius = attempt < 10 ? 50000 : attempt < 15 ? 75000 : 100000;
+      
       const result = await new Promise<google.maps.StreetViewPanoramaData | null>(
         (resolve) => {
           streetViewService.getPanorama(
             {
               location: coords,
-              radius: 100000, // 100km radius
+              radius: radius,
               source: google.maps.StreetViewSource.OUTDOOR, // Only official Google Street View
             },
             (data, status) => {
@@ -480,6 +484,13 @@ async function findRandomStreetViewLocation(
       );
 
       if (result?.location?.latLng) {
+        const panoId = result.location.pano;
+        
+        // Skip if we've already used this panorama
+        if (panoId && usedPanoIds.has(panoId)) {
+          continue;
+        }
+        
         const lat = result.location.latLng.lat();
         const lng = result.location.latLng.lng();
         const streetViewDescription = result.location.description || result.location.shortDescription;
@@ -505,6 +516,11 @@ async function findRandomStreetViewLocation(
           }
         }
         // For 'world', accept any location
+        
+        // Mark this panorama ID as used
+        if (panoId) {
+          usedPanoIds.add(panoId);
+        }
         
         return {
           lat,
@@ -532,13 +548,14 @@ export async function generateRandomLocations(
   onProgress?: (current: number, total: number) => void
 ): Promise<Location[]> {
   const locations: Location[] = [];
+  const usedPanoIds = new Set<string>(); // Track used panorama IDs to avoid duplicates
   
   for (let i = 0; i < count; i++) {
     if (onProgress) {
       onProgress(i + 1, count);
     }
 
-    const location = await findRandomStreetViewLocation(20, regionType, regionName);
+    const location = await findRandomStreetViewLocation(20, regionType, regionName, usedPanoIds);
     
     if (location) {
       locations.push(location);
@@ -548,7 +565,7 @@ export async function generateRandomLocations(
       console.warn(`Could not find Street View location for round ${i + 1}, retrying...`);
       
       // Retry with more attempts
-      const retryLocation = await findRandomStreetViewLocation(50, regionType, regionName);
+      const retryLocation = await findRandomStreetViewLocation(50, regionType, regionName, usedPanoIds);
       if (retryLocation) {
         locations.push(retryLocation);
       } else {
