@@ -18,6 +18,9 @@ const RegionBorder: React.FC<{
   const polygonRef = useRef<google.maps.Polygon | null>(null);
 
   useEffect(() => {
+    // Variable to track if component is still mounted
+    let isMounted = true;
+
     if (!map || regionType === 'world' || !regionName) {
       // Clean up existing polygon
       if (polygonRef.current) {
@@ -51,19 +54,23 @@ const RegionBorder: React.FC<{
       polygonRef.current.setMap(null);
     }
 
-    // Create polygon with just the border (no fill)
-    polygonRef.current = new google.maps.Polygon({
-      paths: [regionBorder],
-      strokeColor: '#10b981',
-      strokeOpacity: 0.8,
-      strokeWeight: 3,
-      fillColor: 'transparent',
-      fillOpacity: 0,
-      map,
-      clickable: false,
-    });
+    // Only create polygon if component is still mounted
+    if (isMounted) {
+      // Create polygon with just the border (no fill)
+      polygonRef.current = new google.maps.Polygon({
+        paths: [regionBorder],
+        strokeColor: '#10b981',
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        map,
+        clickable: false,
+      });
+    }
 
     return () => {
+      isMounted = false;
       if (polygonRef.current) {
         polygonRef.current.setMap(null);
         polygonRef.current = null;
@@ -77,8 +84,15 @@ const RegionBorder: React.FC<{
 const MapPreview: React.FC<{ regionType: RegionType; regionName?: string }> = ({ regionType, regionName }) => {
   const map = useMap();
   const hasInitialized = useRef(false);
+  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Clear any pending update
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = null;
+    }
+
     if (!map) return;
 
     // Only update map if we have a valid selection:
@@ -99,6 +113,13 @@ const MapPreview: React.FC<{ regionType: RegionType; regionName?: string }> = ({
     }
     
     hasInitialized.current = true;
+
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+        updateTimeoutRef.current = null;
+      }
+    };
   }, [map, regionType, regionName]);
 
   return null;

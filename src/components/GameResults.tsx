@@ -15,10 +15,24 @@ const RegionMask: React.FC<{
   const polygonRef = useRef<google.maps.Polygon | null>(null);
 
   useEffect(() => {
-    if (!map || !regionType || regionType === 'world' || !regionName) return;
+    let isMounted = true;
+
+    if (!map || !regionType || regionType === 'world' || !regionName) {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
 
     const bounds = getRegionBounds(regionType, regionName);
-    if (!bounds) return;
+    if (!bounds) {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
 
     // Create a rectangle outlining the selected region
     const regionBorder = [
@@ -29,19 +43,27 @@ const RegionMask: React.FC<{
       { lat: bounds.latMax, lng: bounds.lngMin },
     ];
 
+    // Clean up existing polygon
+    if (polygonRef.current) {
+      polygonRef.current.setMap(null);
+    }
+
     // Create polygon with just the border (no fill)
-    polygonRef.current = new google.maps.Polygon({
-      paths: [regionBorder],
-      strokeColor: '#10b981',
-      strokeOpacity: 0.8,
-      strokeWeight: 3,
-      fillColor: 'transparent',
-      fillOpacity: 0,
-      map,
-      clickable: false,
-    });
+    if (isMounted) {
+      polygonRef.current = new google.maps.Polygon({
+        paths: [regionBorder],
+        strokeColor: '#10b981',
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        map,
+        clickable: false,
+      });
+    }
 
     return () => {
+      isMounted = false;
       if (polygonRef.current) {
         polygonRef.current.setMap(null);
         polygonRef.current = null;
@@ -57,8 +79,15 @@ const MapBoundsFitter: React.FC<{
   results: RoundResult[];
 }> = ({ results }) => {
   const map = useMap();
+  const fitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Clear any pending fit operation
+    if (fitTimeoutRef.current) {
+      clearTimeout(fitTimeoutRef.current);
+      fitTimeoutRef.current = null;
+    }
+
     if (!map) return;
 
     // Collect all points from results
@@ -78,8 +107,20 @@ const MapBoundsFitter: React.FC<{
 
     // Fit the map to the bounds if we have points
     if (hasPoints) {
-      map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 }); // Add padding
+      // Use a slight delay to ensure map is ready
+      fitTimeoutRef.current = setTimeout(() => {
+        if (map) {
+          map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 }); // Add padding
+        }
+      }, 100);
     }
+
+    return () => {
+      if (fitTimeoutRef.current) {
+        clearTimeout(fitTimeoutRef.current);
+        fitTimeoutRef.current = null;
+      }
+    };
   }, [map, results]);
 
   return null;
@@ -94,14 +135,13 @@ const ResultsPolylines: React.FC<{
 
   useEffect(() => {
     if (!map) {
-      console.log('No map available for polylines');
       return;
     }
 
-    console.log('Map available, creating polylines for', results.length, 'results');
-
-    // Clear existing polylines
-    polylinesRef.current.forEach(polyline => polyline.setMap(null));
+    // Clear existing polylines to prevent memory leaks
+    polylinesRef.current.forEach(polyline => {
+      polyline.setMap(null);
+    });
     polylinesRef.current = [];
 
     // Create polylines for each round
@@ -128,13 +168,13 @@ const ResultsPolylines: React.FC<{
       });
 
       polylinesRef.current.push(polyline);
-      console.log(`Created polyline ${index} from`, path[0], 'to', path[1]);
     });
 
-    console.log('Total polylines created:', polylinesRef.current.length);
-
+    // Cleanup function to remove all polylines when component unmounts or results change
     return () => {
-      polylinesRef.current.forEach(polyline => polyline.setMap(null));
+      polylinesRef.current.forEach(polyline => {
+        polyline.setMap(null);
+      });
       polylinesRef.current = [];
     };
   }, [map, results]);

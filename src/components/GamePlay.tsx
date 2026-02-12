@@ -15,10 +15,24 @@ const RegionMask: React.FC<{
   const polygonRef = useRef<google.maps.Polygon | null>(null);
 
   useEffect(() => {
-    if (!map || !regionType || regionType === 'world' || !regionName) return;
+    let isMounted = true;
+
+    if (!map || !regionType || regionType === 'world' || !regionName) {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
 
     const bounds = getRegionBounds(regionType, regionName);
-    if (!bounds) return;
+    if (!bounds) {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null);
+        polygonRef.current = null;
+      }
+      return;
+    }
 
     // Create a rectangle outlining the selected region
     const regionBorder = [
@@ -29,19 +43,27 @@ const RegionMask: React.FC<{
       { lat: bounds.latMax, lng: bounds.lngMin },
     ];
 
+    // Clean up existing polygon
+    if (polygonRef.current) {
+      polygonRef.current.setMap(null);
+    }
+
     // Create polygon with just the border (no fill)
-    polygonRef.current = new google.maps.Polygon({
-      paths: [regionBorder],
-      strokeColor: '#10b981',
-      strokeOpacity: 0.8,
-      strokeWeight: 3,
-      fillColor: 'transparent',
-      fillOpacity: 0,
-      map,
-      clickable: false,
-    });
+    if (isMounted) {
+      polygonRef.current = new google.maps.Polygon({
+        paths: [regionBorder],
+        strokeColor: '#10b981',
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        map,
+        clickable: false,
+      });
+    }
 
     return () => {
+      isMounted = false;
       if (polygonRef.current) {
         polygonRef.current.setMap(null);
         polygonRef.current = null;
@@ -61,7 +83,13 @@ const PolylineComponent: React.FC<{
   const polylineRef = useRef<google.maps.Polyline | null>(null);
 
   useEffect(() => {
-    if (!map || path.length < 2) return;
+    if (!map || path.length < 2) {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+        polylineRef.current = null;
+      }
+      return;
+    }
 
     // Create polyline
     polylineRef.current = new google.maps.Polyline({
@@ -134,20 +162,33 @@ const GamePlay: React.FC<GamePlayProps> = ({
     if (!streetViewRef.current || !currentLocation) return;
 
     let statusListener: google.maps.MapsEventListener | null = null;
+    let povListener: google.maps.MapsEventListener | null = null;
+    let positionListener: google.maps.MapsEventListener | null = null;
+    let panoListener: google.maps.MapsEventListener | null = null;
+    let initTimeout: ReturnType<typeof setTimeout> | null = null;
+    let delayTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const initStreetView = () => {
       if (!window.google || !window.google.maps) {
-        setTimeout(initStreetView, 100);
+        initTimeout = setTimeout(initStreetView, 100);
         return;
       }
 
       // Destroy existing panorama completely
       if (panoramaRef.current) {
         try {
-          if (statusListener) {
-            google.maps.event.removeListener(statusListener);
-            statusListener = null;
-          }
+          // Remove all event listeners
+          if (statusListener) google.maps.event.removeListener(statusListener);
+          if (povListener) google.maps.event.removeListener(povListener);
+          if (positionListener) google.maps.event.removeListener(positionListener);
+          if (panoListener) google.maps.event.removeListener(panoListener);
+          statusListener = null;
+          povListener = null;
+          positionListener = null;
+          panoListener = null;
+          
+          // Clear all listeners from panorama
+          google.maps.event.clearInstanceListeners(panoramaRef.current);
           panoramaRef.current.setVisible(false);
           panoramaRef.current = null;
         } catch (e) {
@@ -161,7 +202,7 @@ const GamePlay: React.FC<GamePlayProps> = ({
       }
 
       // Small delay to ensure DOM is cleared
-      setTimeout(() => {
+      delayTimeout = setTimeout(() => {
         if (!streetViewRef.current) return;
 
         // Create Street View Service to find nearest panorama
@@ -201,9 +242,9 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
               // Add listeners for user interactions to collapse the map
               if (panoramaRef.current) {
-                panoramaRef.current.addListener('pov_changed', collapseMap);
-                panoramaRef.current.addListener('position_changed', collapseMap);
-                panoramaRef.current.addListener('pano_changed', collapseMap);
+                povListener = panoramaRef.current.addListener('pov_changed', collapseMap);
+                positionListener = panoramaRef.current.addListener('position_changed', collapseMap);
+                panoListener = panoramaRef.current.addListener('pano_changed', collapseMap);
               }
             } else {
               // Fallback: try original position
@@ -231,9 +272,9 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
               // Add listeners for user interactions to collapse the map
               if (panoramaRef.current) {
-                panoramaRef.current.addListener('pov_changed', collapseMap);
-                panoramaRef.current.addListener('position_changed', collapseMap);
-                panoramaRef.current.addListener('pano_changed', collapseMap);
+                povListener = panoramaRef.current.addListener('pov_changed', collapseMap);
+                positionListener = panoramaRef.current.addListener('position_changed', collapseMap);
+                panoListener = panoramaRef.current.addListener('pano_changed', collapseMap);
               }
             }
           }
@@ -243,13 +284,22 @@ const GamePlay: React.FC<GamePlayProps> = ({
 
     initStreetView();
 
-    // Cleanup
+    // Cleanup - CRITICAL: Remove all event listeners to prevent memory leaks
     return () => {
-      if (statusListener) {
-        google.maps.event.removeListener(statusListener);
-      }
+      // Clear timeouts
+      if (initTimeout) clearTimeout(initTimeout);
+      if (delayTimeout) clearTimeout(delayTimeout);
+      
+      // Remove all event listeners
+      if (statusListener) google.maps.event.removeListener(statusListener);
+      if (povListener) google.maps.event.removeListener(povListener);
+      if (positionListener) google.maps.event.removeListener(positionListener);
+      if (panoListener) google.maps.event.removeListener(panoListener);
+      
       if (panoramaRef.current) {
         try {
+          // Clear ALL listeners from the panorama instance
+          google.maps.event.clearInstanceListeners(panoramaRef.current);
           panoramaRef.current.setVisible(false);
           panoramaRef.current = null;
         } catch (e) {
@@ -295,6 +345,18 @@ const GamePlay: React.FC<GamePlayProps> = ({
         map.setZoom(1.5);
       }
     }
+    
+    // Cleanup function to ensure timers are cleared when component unmounts
+    return () => {
+      if (mapCollapseTimerRef.current) {
+        clearTimeout(mapCollapseTimerRef.current);
+        mapCollapseTimerRef.current = null;
+      }
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
+    };
   }, [currentRound, map, timeLimit, regionType, regionName]);
 
   // Countdown timer effect
@@ -378,10 +440,16 @@ const GamePlay: React.FC<GamePlayProps> = ({
     setHasSubmitted(true);
     onRoundComplete(result);
 
-    // Clear countdown timer
+    // Clear countdown timer to prevent memory leaks
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = null;
+    }
+    
+    // Clear map collapse timer to prevent memory leaks
+    if (mapCollapseTimerRef.current) {
+      clearTimeout(mapCollapseTimerRef.current);
+      mapCollapseTimerRef.current = null;
     }
 
     // Only auto-zoom if user made a guess
@@ -446,14 +514,25 @@ const GamePlay: React.FC<GamePlayProps> = ({
   // Map click listener component
   const MapClickListener: React.FC = () => {
     const map = useMap(mapId);
+    const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
 
     useEffect(() => {
       if (!map) return;
 
-      const listener = map.addListener('click', handleMapClick);
+      // Remove existing listener if any
+      if (listenerRef.current) {
+        google.maps.event.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
+
+      // Add new listener
+      listenerRef.current = map.addListener('click', handleMapClick);
 
       return () => {
-        google.maps.event.removeListener(listener);
+        if (listenerRef.current) {
+          google.maps.event.removeListener(listenerRef.current);
+          listenerRef.current = null;
+        }
       };
     }, [map]);
 
